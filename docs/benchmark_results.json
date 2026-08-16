@@ -8,7 +8,7 @@
     "ml_speedup": 22598.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 78.8
+    "risk": 78.4
   },
   {
     "format": "H10301-26",
@@ -19,7 +19,7 @@
     "ml_speedup": 16083.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 75.1
+    "risk": 74.8
   },
   {
     "format": "H10301-26",
@@ -30,7 +30,7 @@
     "ml_speedup": 22440.2,
     "fmt_acc": 1,
     "num_acc": 0.125,
-    "risk": 70.1
+    "risk": 69.8
   },
   {
     "format": "H10301-26",
@@ -41,7 +41,7 @@
     "ml_speedup": 135.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 57.2
+    "risk": 56.8
   },
   {
     "format": "N10002-34",
@@ -52,7 +52,7 @@
     "ml_speedup": 22598.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 64
+    "risk": 63.6
   },
   {
     "format": "N10002-34",
@@ -63,7 +63,7 @@
     "ml_speedup": 16083.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 60.6
+    "risk": 60.1
   },
   {
     "format": "N10002-34",
@@ -74,7 +74,7 @@
     "ml_speedup": 22440.2,
     "fmt_acc": 1,
     "num_acc": 0.125,
-    "risk": 55.6
+    "risk": 55.1
   },
   {
     "format": "N10002-34",
@@ -85,7 +85,7 @@
     "ml_speedup": 135.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 42.6
+    "risk": 42.4
   },
   {
     "format": "H10304-37",
@@ -96,7 +96,7 @@
     "ml_speedup": 180497.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 58.8
+    "risk": 58.4
   },
   {
     "format": "H10304-37",
@@ -107,7 +107,7 @@
     "ml_speedup": 128459.3,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 55.1
+    "risk": 54.8
   },
   {
     "format": "H10304-37",
@@ -118,7 +118,7 @@
     "ml_speedup": 178570.0,
     "fmt_acc": 1,
     "num_acc": 0.625,
-    "risk": 50.1
+    "risk": 49.8
   },
   {
     "format": "H10304-37",
@@ -129,6 +129,50 @@
     "ml_speedup": 135.3,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 37.2
+    "risk": 36.8
+  },
+  {
+    "format": "H10302-37",
+    "numbering": "sequential",
+    "bruteforce_q": 19768,
+    "dictionary_q": 19768,
+    "ml_q": 353,
+    "ml_speedup": 56.0,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 54.5
+  },
+  {
+    "format": "H10302-37",
+    "numbering": "sequential_gaps",
+    "bruteforce_q": 19927,
+    "dictionary_q": 19927,
+    "ml_q": 507,
+    "ml_speedup": 39.3,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 50.9
+  },
+  {
+    "format": "H10302-37",
+    "numbering": "clustered",
+    "bruteforce_q": 48463,
+    "dictionary_q": 48463,
+    "ml_q": 356,
+    "ml_speedup": 136.1,
+    "fmt_acc": 1,
+    "num_acc": 0.25,
+    "risk": 46.8
+  },
+  {
+    "format": "H10302-37",
+    "numbering": "random",
+    "bruteforce_q": 944700,
+    "dictionary_q": 944700,
+    "ml_q": 943833,
+    "ml_speedup": 1.0,
+    "fmt_acc": 1,
+    "num_acc": 0,
+    "risk": 32.8
   }
 ]

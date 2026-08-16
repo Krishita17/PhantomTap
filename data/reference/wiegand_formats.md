@@ -27,6 +27,15 @@ width-ambiguity note).
 | **H10301-26** | 26 | 8  | 16 | 0–255      | 0–65,535   | Tiny facility space; facility-code collisions and guessing are trivial. Ubiquitous legacy format. |
 | **N10002-34** | 34 | 16 | 16 | 0–65,535   | 0–65,535   | Wider facility code, but 16-bit card space keeps per-facility populations small and enumerable. |
 | **H10304-37** | 37 | 16 | 19 | 0–65,535   | 0–524,287  | Larger card space resists pure enumeration, but sequential numbering remains fully predictable. |
+| **H10302-37** | 37 | 0  | 35 | — (none)   | 0–34,359,738,367 | **No facility code** — a single 35-bit card number. With no facility field to divide the space by, such formats are markedly *more* enumerable; the auditor's facility-locking advantage disappears, leaving only numbering structure to exploit. |
+
+### Modelled but not encode/decode-exact
+
+The **HID Corporate 1000** family (35-bit: 12-bit company + 20-bit card; 48-bit:
+22-bit company + ~23-bit card) uses a **more complex multi-parity scheme** than
+the single leading/trailing bracket modelled here, so PhantomTap describes it in
+the taxonomy but does not claim bit-exact encode/decode for it. Adding its exact
+parity map is Tier-2 hardware-validation work.
 
 ## Width-ambiguity note
 
@@ -37,13 +46,20 @@ number fits in 16 bits), its unused high-order bits are zero and its parity is
 is also consistent with. Exact width is only recoverable once the high-order
 bits are used.
 
-## Sources to cite in a writeup
+## Sources (public references)
 
-- HID Global Wiegand format documentation and integration guides (H10301,
-  H10304, corporate 1000 families).
-- Public access-control security surveys covering Wiegand weaknesses and
-  facility-code enumeration.
-- The Wiegand interface protocol description (26-bit / 34-bit / 37-bit layouts).
+- HID Global, *Understanding Card Data Formats* (white paper), HID Corporation.
+  <https://www.idesco.com/files/articles/HID%20-%20Understanding%20card%20formats.pdf>
+- Security ID Systems, *The Complete Wiegand Format Guide* — H10301, H10302,
+  H10304 and Corporate 1000 field layouts.
+  <https://securityidsystems.com/guides/wiegand-format-guide/>
+- Authoriz-ID, *Navigating the World of HID 37-bit Card Formats — H10304 and
+  H10302* (16-bit FC + 19-bit card vs. facility-less 35-bit card).
+  <https://authoriz-id.com/blogs/news/navigating-the-world-of-hid-37-bit-card-formats-h10304-and-h10302>
+- Kisi, *How to Calculate Facility Code Using Card Bit Calculators* (26-bit
+  parity and field boundaries). <https://www.getkisi.com/blog/how-to-calculate-facility-code-using-card-bit-calculators>
 
-> Replace the bullet list above with fully-qualified citations (title, author,
-> year, URL, license) before submission.
+Field widths and ranges in the table above are drawn from these public
+specifications. The single leading/trailing bracket-parity model reproduces the
+documented H10301 scheme and is applied as a standard approximation to the wider
+formats; exact HID parity maps are validated against hardware in Tier-2.

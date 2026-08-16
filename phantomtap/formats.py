@@ -182,8 +182,24 @@ H10304_37 = WiegandFormat(
     "enumeration but still fully predictable if numbering is sequential.",
 )
 
+H10302_37 = WiegandFormat(
+    name="H10302-37",
+    total_bits=37,
+    facility_bits=0,
+    card_bits=35,
+    leading=Parity("even", 0, 18),
+    trailing=Parity("odd", 18, 35),
+    description="HID 37-bit with NO facility code -- a single 35-bit card "
+    "number. With no facility field to lock, the space cannot be divided by "
+    "facility, so such formats are markedly more enumerable. (Parity split "
+    "modelled with the standard bracket approximation; exact HID map validated "
+    "in Tier-2.)",
+)
+
 # Registry keyed by name plus a convenient list ordered by total width.
-REGISTRY = {f.name: f for f in (H10301_26, N10002_34, H10304_37)}
+# Note: H10302-37 and H10304-37 share a width but differ in field split and
+# parity ranges, so they remain distinguishable by parity consistency.
+REGISTRY = {f.name: f for f in (H10301_26, N10002_34, H10304_37, H10302_37)}
 ALL_FORMATS: List[WiegandFormat] = sorted(REGISTRY.values(), key=lambda f: f.total_bits)
 
 

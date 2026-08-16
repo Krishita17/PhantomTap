@@ -35,6 +35,7 @@ from .generator import (  # noqa: F401
     ml_characterize,
     run_all_methods,
 )
+from .bayes import RangeEstimate, estimate_population  # noqa: F401
 from .audit import AuditResult, Finding, audit_deployment, render_markdown  # noqa: F401
 
 __all__ = [
@@ -58,6 +59,8 @@ __all__ = [
     "dictionary_characterize",
     "ml_characterize",
     "run_all_methods",
+    "RangeEstimate",
+    "estimate_population",
     "AuditResult",
     "Finding",
     "audit_deployment",

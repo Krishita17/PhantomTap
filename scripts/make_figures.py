@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from phantomtap.audit import audit_deployment
+from phantomtap.bayes import estimate_population
 from phantomtap.generator import (
     ml_characterize,
     run_all_methods,
@@ -113,7 +114,8 @@ def fig_inference_vs_n() -> None:
         for t in range(trials):
             scheme = [NumberingScheme.SEQUENTIAL, NumberingScheme.CLUSTERED,
                       NumberingScheme.RANDOM][t % 3]
-            fmtname = ["H10301-26", "N10002-34", "H10304-37"][t % 3]
+            fmtname = ["H10301-26", "N10002-34", "H10304-37",
+                       "H10302-37"][t % 4]
             dep = generate_deployment(fmt_name=fmtname, numbering=scheme,
                                       issued=500, seed=1000 + t)
             obs = [c.raw for c in dep.observed_sample(n)]
@@ -216,12 +218,84 @@ def fig_learning_curve() -> None:
     _save(fig, "learning_curve")
 
 
+def fig_population_estimation() -> None:
+    """Bayesian active-learning: size a population in O(log N), not O(N).
+
+    Left panel  -- reader queries to estimate the population size vs. the true
+    size, for sequential numbering, against the O(N) exhaustive-scan reference.
+    Right panel -- estimation error by numbering scheme: tight for
+    sequential-like layouts, large for randomised numbering, which *resists*
+    reconnaissance (a positive security property).
+    """
+    sizes = [100, 200, 400, 800, 1600, 3200, 6400]
+    seeds = range(5)
+    q_bayes = []
+    for n in sizes:
+        qs = []
+        for s in seeds:
+            dep = generate_deployment(numbering=NumberingScheme.SEQUENTIAL,
+                                      issued=n, seed=100 + s)
+            reader = SimulatedReader.from_deployment(dep)
+            seed_cn = dep.observed_sample(8, )[0].card_number
+            est = estimate_population(reader, dep.fmt, dep.facility_code, seed_cn)
+            qs.append(est.queries)
+        q_bayes.append(statistics.median(qs))
+
+    schemes = [
+        (NumberingScheme.SEQUENTIAL, "sequential"),
+        (NumberingScheme.CLUSTERED, "clustered"),
+        (NumberingScheme.RANDOM, "random"),
+    ]
+    errs, err_sd = [], []
+    for scheme, _ in schemes:
+        es = []
+        for s in seeds:
+            dep = generate_deployment(numbering=scheme, issued=800, seed=200 + s)
+            reader = SimulatedReader.from_deployment(dep)
+            seed_cn = dep.observed_sample(8)[0].card_number
+            est = estimate_population(reader, dep.fmt, dep.facility_code, seed_cn)
+            es.append(abs(est.count_est - len(dep.credentials)) / len(dep.credentials))
+        errs.append(statistics.mean(es))
+        err_sd.append(statistics.pstdev(es))
+
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(11.4, 4.5))
+
+    axl.plot(sizes, q_bayes, "-o", color=C_ML, lw=2, ms=5,
+             label="Bayesian sizing (PhantomTap)")
+    axl.plot(sizes, sizes, "--", color=C_BF, lw=1.6,
+             label="Exhaustive scan  O(N)")
+    axl.set_xscale("log"); axl.set_yscale("log")
+    axl.set_xlabel("True issued population size N")
+    axl.set_ylabel("Reader queries to size the population")
+    axl.set_title("Population sizing cost: O(log N) vs O(N)", fontweight="bold")
+    axl.legend(frameon=False, loc="upper left")
+    axl.annotate("~flat: cost grows\nlogarithmically",
+                 (sizes[-1], q_bayes[-1]), textcoords="offset points",
+                 xytext=(-10, 18), ha="right", fontsize=8.5, color=C_ML,
+                 fontweight="bold")
+
+    x = np.arange(len(schemes))
+    colors = [C_ML, C_ACCENT, C_BF]
+    axr.bar(x, [e * 100 for e in errs], yerr=[e * 100 for e in err_sd],
+            color=colors, capsize=4)
+    axr.set_xticks(x, [s[1] for s in schemes])
+    axr.set_ylabel("Population-size estimation error (%)")
+    axr.set_xlabel("Numbering scheme")
+    axr.set_title("Accuracy: predictable vs. resistant numbering",
+                  fontweight="bold")
+    for xi, e in zip(x, errs):
+        axr.annotate(f"{e*100:.0f}%", (xi, e * 100), textcoords="offset points",
+                     xytext=(0, 4), ha="center", fontsize=9, fontweight="bold")
+    _save(fig, "population_estimation")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
     fig_inference_vs_n()
     fig_risk_vs_config()
     fig_learning_curve()
+    fig_population_estimation()
     print("done.")
 
 

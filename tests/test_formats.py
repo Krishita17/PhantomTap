@@ -5,7 +5,9 @@ from phantomtap.formats import ALL_FORMATS, get_format
 
 @pytest.mark.parametrize("fmt", ALL_FORMATS, ids=lambda f: f.name)
 def test_encode_decode_roundtrip(fmt):
-    for fc, cn in [(0, 0), (1, 1), (fmt.max_facility, fmt.max_card),
+    # Clamp facility values so 0-facility formats (e.g. H10302) stay in range.
+    for fc, cn in [(0, 0), (min(1, fmt.max_facility), 1),
+                   (fmt.max_facility, fmt.max_card),
                    (fmt.max_facility // 2, fmt.max_card // 3)]:
         raw = fmt.encode(fc, cn)
         d = fmt.decode(raw)

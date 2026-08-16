@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-21%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-27%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -18,7 +18,7 @@
   <code>rfid</code> · <code>nfc</code> · <code>flipper-zero</code> ·
   <code>access-control</code> · <code>security-audit</code> ·
   <code>wiegand</code> · <code>mifare</code> · <code>active-learning</code> ·
-  <code>physical-security</code> · <code>pentesting</code>
+  <code>bayesian</code> · <code>physical-security</code> · <code>pentesting</code>
 </p>
 
 ---
@@ -46,15 +46,30 @@ codes, numbering schemes, weak default keys.
 3. **produces a scored, explainable audit report** ranking how weak a
    deployment is, and why, with concrete remediation.
 
-### Headline result
+### Two headline results
 
-Across every format × numbering configuration, ML guidance characterizes 90% of
-an issued credential population with a **median of ~22,000× fewer reader
-queries** than brute force (min 135×, max 180,498×).
+**1. Characterization efficiency.** Across the full format × numbering sweep, ML
+guidance characterizes 90% of an issued population with a **median ~16,000×
+fewer reader queries** than brute force (max **180,498×**). The one configuration
+where it gives *no* advantage — a facility-less **H10302** format with
+**randomized** numbering (1×) — is exactly the hardened design defenders should
+aim for, and the benchmark reports it plainly rather than hiding it.
 
 <p align="center">
   <img src="docs/figures/attempts_to_characterize.png" width="720"
        alt="Attempts-to-characterize: ML guidance vs. baselines">
+</p>
+
+**2. Bayesian population sizing.** An active-learning boundary search estimates
+*how many* credentials a facility has issued — and over what range — in
+**O(log N)** reader queries instead of the O(N) an exhaustive scan needs. A
+sequential population of 6,400 cards is sized from **~300 queries** to within a
+few percent. Randomized numbering defeats it (large error) — again, a *positive*
+security signal, surfaced rather than buried.
+
+<p align="center">
+  <img src="docs/figures/population_estimation.png" width="820"
+       alt="Bayesian population sizing: O(log N) query cost, and accuracy by numbering scheme">
 </p>
 
 ## Why it's novel
@@ -64,8 +79,15 @@ queries** than brute force (min 135×, max 180,498×).
   and use it to guide search.
 - **Credential-format inference from a few observations** is an under-explored,
   tractable ML problem.
+- **Bayesian active-learning population sizing** answers "how big is this
+  deployment?" in *logarithmic* query cost — a reconnaissance capability distinct
+  from exhaustive discovery, and one that degrades *honestly* on hardened
+  (randomized) numbering.
 - It **bridges hardware hacking and structured software security** — an embedded
   RF device plus host-side sequence modelling plus a reporting engine.
+- **Grounded in real public data.** The default-key detector uses the actual
+  community MIFARE dictionary shipped with Proxmark3/libnfc/Flipper, and the
+  format taxonomy uses published HID specifications — every source cited.
 - The **"auditor" inversion**: turning offensive capability into a scored,
   explainable audit is the practical, defensible contribution.
 
@@ -108,7 +130,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 21 tests
+make test          # 27 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -156,6 +178,10 @@ Full table + JSON: [`docs/benchmark_results.md`](docs/benchmark_results.md).
 | N10002-34 | sequential | 7,977,297 | 9,943,377 | **353** | 22,599× | 1.00 | 1.00 |
 | H10304-37 | sequential | 63,715,665 | 79,444,305 | **353** | 180,498× | 1.00 | 1.00 |
 | H10304-37 | random     | 64,178,091 | 79,906,731 | **474,255** | 135× | 1.00 | 1.00 |
+| H10302-37 | sequential | 19,768 | 19,768 | **353** | 56× | 1.00 | 1.00 |
+| H10302-37 | random     | 944,700 | 944,700 | **943,833** | **1×** | 1.00 | 0.00 |
+
+**Median ML speedup across all 16 configs: 16,084×** (min 1×, max 180,498×).
 
 **How the win works.** ML makes two moves the baselines can't: it (1) *locks the
 facility code* inferred from the reads (dividing the space by the whole
@@ -163,6 +189,14 @@ facility range), and (2) *region-grows* over card numbers from the observed
 cluster, walking a sequential/clustered population directly instead of scanning
 empty low-numbered space. Even on **random** numbering — where region-growing
 gives no signal — locking the facility code alone yields a ~135× win.
+
+**Where it *doesn't* win — and why that matters.** The facility-less **H10302**
+format has no facility code to lock, so brute force is already cheap and ML's
+edge shrinks (56× on sequential). Combine it with **randomized** numbering and
+guided search collapses to **1×** — no better than brute force. That row is the
+whole thesis in miniature: PhantomTap's advantage *is* the deployment's
+structural weakness, so "PhantomTap can't help an attacker here" reads directly
+as "this design is hard to audit — good." The benchmark surfaces it, unedited.
 
 <p align="center">
   <img src="docs/figures/inference_vs_n.png" width="49%"
@@ -193,9 +227,13 @@ gives no signal — locking the facility code alone yields a ~135× win.
 | H10301-26 | 26 | 8-bit (0–255) | 16-bit | Tiny facility space; trivial to guess/collide |
 | N10002-34 | 34 | 16-bit | 16-bit | Small per-facility card space stays enumerable |
 | H10304-37 | 37 | 16-bit | 19-bit | Resists enumeration, but sequential numbering is fully predictable |
+| H10302-37 | 37 | **none** | 35-bit | No facility field to divide the space by → markedly *more* enumerable |
 
-Details + citations: [`data/reference/wiegand_formats.md`](data/reference/wiegand_formats.md)
-· default-key reference: [`data/reference/default_keys.md`](data/reference/default_keys.md).
+Real, cited public references — HID format specifications and the community
+MIFARE default-key dictionary shipped with Proxmark3/libnfc/Flipper:
+[`data/reference/wiegand_formats.md`](data/reference/wiegand_formats.md)
+· [`data/reference/default_keys.md`](data/reference/default_keys.md)
+· [`data/reference/mifare_default_keys.dic`](data/reference/mifare_default_keys.dic).
 
 ## Project layout
 
@@ -206,12 +244,13 @@ phantomtap/
   reader.py       simulated reader (accept/reject oracle, counts queries)
   inference.py    format-inference parser (format, facility, numbering, range)
   generator.py    brute-force / dictionary baselines + ML-guided auditor
+  bayes.py        Bayesian active-learning population-size estimator (O(log N))
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
-  keys.py         publicly documented default keys (for detection)
+  keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · demo
-tests/            21 pytest cases
+tests/            27 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

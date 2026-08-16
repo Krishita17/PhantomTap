@@ -140,7 +140,9 @@ def generate_deployment(
     fmt = get_format(fmt_name)
 
     if facility_code is None:
-        facility_code = rng.randint(1, min(fmt.max_facility, 250))
+        # Formats with no facility field (e.g. H10302) always use FC 0.
+        facility_code = 0 if fmt.max_facility == 0 else rng.randint(
+            1, min(fmt.max_facility, 250))
 
     card_nums = _issue_card_numbers(numbering, issued, fmt.max_card, rng)
     creds = [

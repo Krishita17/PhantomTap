@@ -1,6 +1,6 @@
 {
-  "deployment": "H10301-26/sequential/mifare_classic/seed7",
-  "risk_score": 76,
+  "deployment": "H10301-26/sequential/mifare_classic/seed1",
+  "risk_score": 82,
   "risk_band": "CRITICAL",
   "findings": [
     {
@@ -14,9 +14,9 @@
     {
       "factor": "keys",
       "severity": "critical",
-      "score": 56,
+      "score": 78,
       "title": "Sector key hygiene",
-      "detail": "6/16 sectors (38%) still carry publicly documented default keys (e.g. 000000000000, 1A982C7E459A, B0B1B2B3B4B5). Keys are shared across the population, so recovering one card compromises all.",
+      "detail": "11/16 sectors (69%) still carry publicly documented default keys (e.g. 00000000000A, 0123456789AB, 123456789ABC). Keys are shared across the population, so recovering one card compromises all.",
       "remediation": "Rotate every sector off factory/default keys, use per-card diversified keys derived from a master + UID, and store no key material in the clear."
     },
     {
@@ -32,7 +32,7 @@
       "severity": "high",
       "score": 100,
       "title": "Attempts-to-characterize",
-      "detail": "Guided search characterised 90% of the issued population in 443 reader queries versus ~5,450,824 for brute force (~12,304x fewer attempts). Low attempts-to-characterize is itself a weakness signal.",
+      "detail": "Guided search characterised 90% of the issued population in 443 reader queries versus ~2,332,513 for brute force (~5,265x fewer attempts). Low attempts-to-characterize is itself a weakness signal.",
       "remediation": "Randomised numbering and authenticated credentials both raise the query cost of mapping the population."
     },
     {
@@ -45,10 +45,13 @@
     }
   ],
   "metrics": {
-    "bruteforce_queries": 5450824,
-    "dictionary_queries": 7416904,
+    "bruteforce_queries": 2332513,
+    "dictionary_queries": 4298593,
     "ml_queries": 443,
     "ml_fraction_found": 0.9,
-    "issued": 500
+    "issued": 500,
+    "population_estimate": 516,
+    "population_estimate_queries": 267,
+    "population_estimate_error": 0.032
   }
 }
