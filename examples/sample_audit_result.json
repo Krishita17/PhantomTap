@@ -1,0 +1,54 @@
+{
+  "deployment": "H10301-26/sequential/mifare_classic/seed7",
+  "risk_score": 76,
+  "risk_band": "CRITICAL",
+  "findings": [
+    {
+      "factor": "numbering",
+      "severity": "critical",
+      "score": 92,
+      "title": "Numbering scheme: sequential",
+      "detail": "Card numbers are issued strictly sequentially. Knowing one valid card lets an assessor predict every neighbour with near certainty.",
+      "remediation": "Issue card numbers from a cryptographically random, non-guessable pool and decouple them from any physical/temporal issuance order."
+    },
+    {
+      "factor": "keys",
+      "severity": "critical",
+      "score": 56,
+      "title": "Sector key hygiene",
+      "detail": "6/16 sectors (38%) still carry publicly documented default keys (e.g. 000000000000, 1A982C7E459A, B0B1B2B3B4B5). Keys are shared across the population, so recovering one card compromises all.",
+      "remediation": "Rotate every sector off factory/default keys, use per-card diversified keys derived from a master + UID, and store no key material in the clear."
+    },
+    {
+      "factor": "format",
+      "severity": "high",
+      "score": 100,
+      "title": "Credential format: H10301-26 (26-bit)",
+      "detail": "HID 26-bit, the ubiquitous legacy format. Tiny 8-bit facility code space (0-255) makes facility collisions and guessing trivial. The card-number field is 16 bits (max 65,535), and the facility-code field is 8 bits (max 255).",
+      "remediation": "Migrate to a high-bit-count, cryptographically authenticated credential (e.g. Seos / DESFire EV2/EV3, iCLASS SE) rather than a static Wiegand format that can be read and replayed."
+    },
+    {
+      "factor": "characterization",
+      "severity": "high",
+      "score": 100,
+      "title": "Attempts-to-characterize",
+      "detail": "Guided search characterised 90% of the issued population in 443 reader queries versus ~5,450,824 for brute force (~12,304x fewer attempts). Low attempts-to-characterize is itself a weakness signal.",
+      "remediation": "Randomised numbering and authenticated credentials both raise the query cost of mapping the population."
+    },
+    {
+      "factor": "clonability",
+      "severity": "medium",
+      "score": 45,
+      "title": "Card family: MIFARE Classic (sectored)",
+      "detail": "Sectored cards carry per-sector keys, so cloning depends on key strength. MIFARE Classic's Crypto-1 cipher is itself academically broken, so weak/default keys are decisive.",
+      "remediation": "Move off MIFARE Classic/Crypto-1 to AES-authenticated DESFire-class credentials."
+    }
+  ],
+  "metrics": {
+    "bruteforce_queries": 5450824,
+    "dictionary_queries": 7416904,
+    "ml_queries": 443,
+    "ml_fraction_found": 0.9,
+    "issued": 500
+  }
+}

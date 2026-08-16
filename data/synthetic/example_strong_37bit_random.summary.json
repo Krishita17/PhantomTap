@@ -1,0 +1,13 @@
+{
+  "name": "example_strong_37bit_random",
+  "format": "H10304-37",
+  "facility_code": 246,
+  "numbering": "random",
+  "family": "mifare_classic",
+  "issued": 120,
+  "card_lo": 11178,
+  "card_hi": 523571,
+  "uses_default_keys": false,
+  "default_key_fraction": 0.6,
+  "key_diversified": true
+}

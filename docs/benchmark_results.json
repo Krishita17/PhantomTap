@@ -1,0 +1,134 @@
+[
+  {
+    "format": "H10301-26",
+    "numbering": "sequential",
+    "bruteforce_q": 7977297,
+    "dictionary_q": 9943377,
+    "ml_q": 353,
+    "ml_speedup": 22598.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 78.8
+  },
+  {
+    "format": "H10301-26",
+    "numbering": "sequential_gaps",
+    "bruteforce_q": 7977453,
+    "dictionary_q": 9943533,
+    "ml_q": 496,
+    "ml_speedup": 16083.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 75.1
+  },
+  {
+    "format": "H10301-26",
+    "numbering": "clustered",
+    "bruteforce_q": 8011137,
+    "dictionary_q": 9977217,
+    "ml_q": 357,
+    "ml_speedup": 22440.2,
+    "fmt_acc": 1,
+    "num_acc": 0.125,
+    "risk": 70.1
+  },
+  {
+    "format": "H10301-26",
+    "numbering": "random",
+    "bruteforce_q": 8022236,
+    "dictionary_q": 9988316,
+    "ml_q": 59151,
+    "ml_speedup": 135.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 57.2
+  },
+  {
+    "format": "N10002-34",
+    "numbering": "sequential",
+    "bruteforce_q": 7977297,
+    "dictionary_q": 9943377,
+    "ml_q": 353,
+    "ml_speedup": 22598.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 64
+  },
+  {
+    "format": "N10002-34",
+    "numbering": "sequential_gaps",
+    "bruteforce_q": 7977453,
+    "dictionary_q": 9943533,
+    "ml_q": 496,
+    "ml_speedup": 16083.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 60.6
+  },
+  {
+    "format": "N10002-34",
+    "numbering": "clustered",
+    "bruteforce_q": 8011137,
+    "dictionary_q": 9977217,
+    "ml_q": 357,
+    "ml_speedup": 22440.2,
+    "fmt_acc": 1,
+    "num_acc": 0.125,
+    "risk": 55.6
+  },
+  {
+    "format": "N10002-34",
+    "numbering": "random",
+    "bruteforce_q": 8022236,
+    "dictionary_q": 9988316,
+    "ml_q": 59151,
+    "ml_speedup": 135.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 42.6
+  },
+  {
+    "format": "H10304-37",
+    "numbering": "sequential",
+    "bruteforce_q": 63715665,
+    "dictionary_q": 79444305,
+    "ml_q": 353,
+    "ml_speedup": 180497.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 58.8
+  },
+  {
+    "format": "H10304-37",
+    "numbering": "sequential_gaps",
+    "bruteforce_q": 63715821,
+    "dictionary_q": 79444461,
+    "ml_q": 496,
+    "ml_speedup": 128459.3,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 55.1
+  },
+  {
+    "format": "H10304-37",
+    "numbering": "clustered",
+    "bruteforce_q": 63749505,
+    "dictionary_q": 79478145,
+    "ml_q": 357,
+    "ml_speedup": 178570.0,
+    "fmt_acc": 1,
+    "num_acc": 0.625,
+    "risk": 50.1
+  },
+  {
+    "format": "H10304-37",
+    "numbering": "random",
+    "bruteforce_q": 64178091,
+    "dictionary_q": 79906731,
+    "ml_q": 474255,
+    "ml_speedup": 135.3,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 37.2
+  }
+]

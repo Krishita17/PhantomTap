@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phantomtap"
+version = "0.1.0"
+description = "ML-guided RFID/NFC fuzzing & access-control auditing with Flipper Zero"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Krishita Sanjay Choksi" }]
+keywords = [
+    "rfid", "nfc", "flipper-zero", "access-control", "security-audit",
+    "wiegand", "mifare", "active-learning", "physical-security", "pentesting",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = []  # Tier-1 pipeline is pure standard library.
+
+[project.optional-dependencies]
+hardware = ["pyserial>=3.5"]           # Tier-2 Flipper Zero bridge
+figures = ["matplotlib>=3.6", "numpy>=1.23"]
+dev = ["pytest>=7.0", "matplotlib>=3.6", "numpy>=1.23"]
+
+[project.scripts]
+phantomtap = "phantomtap.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Krishita17/PhantomTap"
+Issues = "https://github.com/Krishita17/PhantomTap/issues"
+
+[tool.setuptools]
+packages = ["phantomtap"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

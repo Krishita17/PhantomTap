@@ -1,0 +1,28 @@
+[
+  {
+    "name": "example_weak_26bit_sequential",
+    "format": "H10301-26",
+    "facility_code": 116,
+    "numbering": "sequential",
+    "family": "mifare_classic",
+    "issued": 120,
+    "card_lo": 37685,
+    "card_hi": 37804,
+    "uses_default_keys": true,
+    "default_key_fraction": 0.6,
+    "key_diversified": false
+  },
+  {
+    "name": "example_strong_37bit_random",
+    "format": "H10304-37",
+    "facility_code": 246,
+    "numbering": "random",
+    "family": "mifare_classic",
+    "issued": 120,
+    "card_lo": 11178,
+    "card_hi": 523571,
+    "uses_default_keys": false,
+    "default_key_fraction": 0.6,
+    "key_diversified": true
+  }
+]

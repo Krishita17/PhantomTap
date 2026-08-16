@@ -1,0 +1,12 @@
+# PhantomTap Tier-1 (simulation) pipeline needs NOTHING beyond the Python
+# standard library. The requirements below are only for regenerating figures
+# and running the test suite.
+#
+#   pip install -e .            # core, zero third-party deps
+#   pip install -e ".[dev]"     # + pytest, matplotlib, numpy (tests & figures)
+#   pip install -e ".[hardware]"# + pyserial (Tier-2 Flipper bridge)
+
+matplotlib>=3.6
+numpy>=1.23
+pytest>=7.0
+# pyserial>=3.5   # uncomment for the Tier-2 hardware bridge

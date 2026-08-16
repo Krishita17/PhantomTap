@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "PhantomTap: ML-Guided RFID/NFC Fuzzing & Access-Control Auditing"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "Choksi"
+    given-names: "Krishita Sanjay"
+repository-code: "https://github.com/Krishita17/PhantomTap"
+abstract: >-
+  PhantomTap turns a Flipper Zero into an intelligent access-control auditing
+  platform. A host-side layer learns the structure of observed credentials,
+  generates the next-best test credential via active learning instead of blind
+  brute force, and produces an explainable, prioritized access-control risk
+  report. Deliberately a defensive auditing tool: all experiments use synthetic
+  credential populations or the author's own cards and readers.
+keywords:
+  - RFID
+  - NFC
+  - Flipper Zero
+  - access control
+  - security audit
+  - Wiegand
+  - MIFARE
+  - active learning
+  - physical security
+license: MIT
+version: 0.1.0
+date-released: "2026-08-15"
