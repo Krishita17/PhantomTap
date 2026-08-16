@@ -16,13 +16,13 @@ flowchart TB
     F <-->|serial / BLE CLI| B
 
     subgraph Host["Host (Python)"]
-        B["Bridge layer\n(phantomtap.bridge)"]
-        P["Credential parser +\nformat inference\n(phantomtap.inference)"]
-        G["ML-guided candidate\ngenerator — active learning\n(phantomtap.generator)"]
+        B["Bridge layer<br/>(phantomtap.bridge)"]
+        P["Credential parser +<br/>format inference<br/>(phantomtap.inference)"]
+        G["ML-guided candidate<br/>generator — active learning<br/>(phantomtap.generator)"]
         B --> P --> G
-        G --> SIM["Simulated reader env\n(phantomtap.reader)"]
+        G --> SIM["Simulated reader env<br/>(phantomtap.reader)"]
         G --> EXEC["Real Flipper execution"]
-        G --> AUD["Audit report + risk score\n(phantomtap.audit)"]
+        G --> AUD["Audit report + risk score<br/>(phantomtap.audit)"]
         SIM --> G
     end
 ```

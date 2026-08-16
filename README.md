@@ -73,13 +73,13 @@ queries** than brute force (min 135×, max 180,498×).
 
 ```mermaid
 flowchart TB
-    R["Reader / card"] <-->|RF| F["Flipper Zero\n(RF front-end)"]
-    F <-->|serial / BLE CLI| B["Bridge\n(phantomtap.bridge)"]
-    B --> P["Format inference\n(phantomtap.inference)"]
-    P --> G["ML-guided generator\nactive learning\n(phantomtap.generator)"]
-    G --> SIM["Simulated reader\n(phantomtap.reader)"]
+    R["Reader / card"] <-->|RF| F["Flipper Zero<br/>(RF front-end)"]
+    F <-->|serial / BLE CLI| B["Bridge<br/>(phantomtap.bridge)"]
+    B --> P["Format inference<br/>(phantomtap.inference)"]
+    P --> G["ML-guided generator<br/>active learning<br/>(phantomtap.generator)"]
+    G --> SIM["Simulated reader<br/>(phantomtap.reader)"]
     G --> EXEC["Real Flipper execution"]
-    G --> AUD["Audit report + risk score\n(phantomtap.audit)"]
+    G --> AUD["Audit report + risk score<br/>(phantomtap.audit)"]
     SIM --> G
 ```
 
