@@ -45,7 +45,14 @@ from .monitor import (  # noqa: F401
     red_vs_blue,
     synthetic_stream,
 )
-from .audit import AuditResult, Finding, audit_deployment, render_markdown  # noqa: F401
+from .audit import (  # noqa: F401
+    AuditResult,
+    Finding,
+    audit_deployment,
+    quick_risk_score,
+    render_markdown,
+)
+from .remediation import Fix, candidate_fixes, prioritized_plan  # noqa: F401
 
 __all__ = [
     "__version__",
@@ -81,5 +88,9 @@ __all__ = [
     "AuditResult",
     "Finding",
     "audit_deployment",
+    "quick_risk_score",
     "render_markdown",
+    "Fix",
+    "candidate_fixes",
+    "prioritized_plan",
 ]

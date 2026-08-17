@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-35%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-39%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -113,6 +113,28 @@ the discovered range is valid); randomized numbering preserves it.
        alt="Effective security vs. structure leakage, in bits, by numbering scheme">
 </p>
 
+### Not just a score — a prioritized fix roadmap
+
+An audit that only assigns a number leaves the owner asking "so what do I do
+*first*?" PhantomTap answers it. For every candidate hardening step it builds a
+counterfactual deployment with that one knob changed, re-scores it, and ranks the
+fixes by **risk reduction per fix** — then greedily compounds them into a
+sequenced roadmap. Every audit report ends with this table:
+
+| Step | Fix | Risk after | Δ |
+|-----:|-----|-----------:|---:|
+| 1 | Randomize card numbering | 58 | −24 |
+| 2 | Upgrade credential format | 39 | −19 |
+| 3 | Rotate off default keys | 27 | −12 |
+| 4 | Diversify keys per card | 20 | −7 |
+
+<p align="center">
+  <img src="docs/figures/remediation.png" width="52%"
+       alt="Remediation waterfall: risk reduction per fix">
+  <img src="docs/figures/risk_factors.png" width="46%"
+       alt="Weighted risk-factor contributions, weak vs strong deployment">
+</p>
+
 ## Why it's novel
 
 - The Flipper community builds **tools, not intelligence**. Existing apps
@@ -187,7 +209,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 35 tests
+make test          # 39 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -304,12 +326,13 @@ phantomtap/
   bayes.py        Bayesian active-learning population-size estimator (O(log N))
   entropy.py      information-theoretic guessing-resistance (security in bits)
   monitor.py      blue-team detectors + synthetic badge-event stream + red-vs-blue
+  remediation.py  prioritized "what-if" fix roadmap (risk reduction per fix)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · demo
-tests/            35 pytest cases
+tests/            39 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

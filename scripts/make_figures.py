@@ -20,8 +20,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from phantomtap.audit import audit_deployment
+from phantomtap.audit import WEIGHTS, audit_deployment
 from phantomtap.bayes import estimate_population
+from phantomtap.remediation import prioritized_plan
 from phantomtap.entropy import assess_guessability
 from phantomtap.generator import (
     ml_characterize,
@@ -411,6 +412,80 @@ def fig_purple_team() -> None:
     _save(fig, "purple_team")
 
 
+def fig_remediation() -> None:
+    """Waterfall: composite risk falling as the roadmap is applied in order."""
+    dep = generate_deployment(
+        fmt_name="H10301-26", numbering=NumberingScheme.SEQUENTIAL,
+        family=CardFamily.UID_ONLY, uses_default_keys=True,
+        default_key_fraction=0.9, key_diversified=False, seed=1)
+    from phantomtap.audit import quick_risk_score
+    base = quick_risk_score(dep)
+    plan = prioritized_plan(dep)
+
+    labels = ["Current"] + [f.action.replace(" ", "\n", 1) for f in plan]
+    risks = [base] + [f.new_risk for f in plan]
+
+    fig, ax = plt.subplots(figsize=(9.2, 4.8))
+    x = np.arange(len(risks))
+    band = [C_BF if r >= 75 else "#f4a582" if r >= 55 else "#92c5de"
+            if r >= 35 else C_ML for r in risks]
+    ax.plot(x, risks, "-", color="#666", lw=1.5, zorder=1)
+    ax.scatter(x, risks, c=band, s=170, zorder=3, edgecolor="white", linewidth=1.5)
+    for i in range(1, len(risks)):
+        drop = risks[i - 1] - risks[i]
+        if drop:
+            ax.annotate(f"−{drop}", (x[i], risks[i]), textcoords="offset points",
+                        xytext=(0, -18), ha="center", fontsize=9,
+                        color=C_ML, fontweight="bold")
+    for xi, r in zip(x, risks):
+        ax.annotate(str(r), (xi, r), textcoords="offset points", xytext=(0, 10),
+                    ha="center", fontsize=9, fontweight="bold")
+    ax.set_xticks(x, labels, fontsize=8.5)
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("Composite risk score")
+    ax.set_title("Prioritized remediation: risk reduction per fix",
+                 fontweight="bold")
+    for yv, lbl in ((75, "CRIT"), (55, "HIGH"), (35, "MED")):
+        ax.axhline(yv, color=GRID, lw=1, ls="--")
+        ax.annotate(lbl, (len(risks) - 0.5, yv + 1), fontsize=7.5, color="#999")
+    _save(fig, "remediation")
+
+
+def fig_risk_factors() -> None:
+    """What drives the score: weighted factor contributions, weak vs. strong."""
+    weak = generate_deployment(
+        fmt_name="H10301-26", numbering=NumberingScheme.SEQUENTIAL,
+        family=CardFamily.UID_ONLY, uses_default_keys=True,
+        default_key_fraction=0.9, key_diversified=False, seed=1)
+    strong = generate_deployment(
+        fmt_name="H10304-37", numbering=NumberingScheme.RANDOM,
+        family=CardFamily.MIFARE_CLASSIC, uses_default_keys=False,
+        default_key_fraction=0.0, key_diversified=True, seed=1)
+
+    order = ["numbering", "keys", "clonability", "guessability", "format",
+             "characterization"]
+
+    def contrib(dep):
+        res = audit_deployment(dep)
+        by = {f.factor: f.score for f in res.findings}
+        return [WEIGHTS[k] * by.get(k, 0) for k in order], res.risk_score
+
+    wv, wr = contrib(weak)
+    sv, sr = contrib(strong)
+
+    y = np.arange(len(order))
+    h = 0.38
+    fig, ax = plt.subplots(figsize=(8.8, 4.8))
+    ax.barh(y - h / 2, wv, h, color=C_BF, label=f"Weak deployment (risk {wr})")
+    ax.barh(y + h / 2, sv, h, color=C_ML, label=f"Strong deployment (risk {sr})")
+    ax.set_yticks(y, [o.capitalize() for o in order])
+    ax.invert_yaxis()
+    ax.set_xlabel("Weighted contribution to composite risk (points)")
+    ax.set_title("What drives the risk score", fontweight="bold")
+    ax.legend(frameon=False, loc="lower right")
+    _save(fig, "risk_factors")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -420,6 +495,8 @@ def main() -> None:
     fig_population_estimation()
     fig_guessability()
     fig_purple_team()
+    fig_remediation()
+    fig_risk_factors()
     print("done.")
 
 
