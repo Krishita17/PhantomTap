@@ -44,6 +44,50 @@
     "risk": 56.1
   },
   {
+    "format": "H10306-34",
+    "numbering": "sequential",
+    "bruteforce_q": 7977297,
+    "dictionary_q": 9943377,
+    "ml_q": 353,
+    "ml_speedup": 22598.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 66.9
+  },
+  {
+    "format": "H10306-34",
+    "numbering": "sequential_gaps",
+    "bruteforce_q": 7977453,
+    "dictionary_q": 9943533,
+    "ml_q": 497,
+    "ml_speedup": 16051.2,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 63.2
+  },
+  {
+    "format": "H10306-34",
+    "numbering": "clustered",
+    "bruteforce_q": 8011137,
+    "dictionary_q": 9977217,
+    "ml_q": 357,
+    "ml_speedup": 22440.2,
+    "fmt_acc": 1,
+    "num_acc": 0.125,
+    "risk": 55.9
+  },
+  {
+    "format": "H10306-34",
+    "numbering": "random",
+    "bruteforce_q": 8022236,
+    "dictionary_q": 9988316,
+    "ml_q": 59151,
+    "ml_speedup": 135.6,
+    "fmt_acc": 1,
+    "num_acc": 1,
+    "risk": 44.6
+  },
+  {
     "format": "N10002-34",
     "numbering": "sequential",
     "bruteforce_q": 7977297,
@@ -52,18 +96,18 @@
     "ml_speedup": 22598.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 69.1
+    "risk": 66.9
   },
   {
     "format": "N10002-34",
     "numbering": "sequential_gaps",
     "bruteforce_q": 7977453,
     "dictionary_q": 9943533,
-    "ml_q": 496,
-    "ml_speedup": 16083.6,
+    "ml_q": 497,
+    "ml_speedup": 16051.2,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 65.1
+    "risk": 63.2
   },
   {
     "format": "N10002-34",
@@ -74,7 +118,7 @@
     "ml_speedup": 22440.2,
     "fmt_acc": 1,
     "num_acc": 0.125,
-    "risk": 56.6
+    "risk": 55.9
   },
   {
     "format": "N10002-34",
@@ -140,29 +184,29 @@
     "ml_speedup": 56.0,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 62
+    "risk": 60.6
   },
   {
     "format": "H10302-37",
     "numbering": "sequential_gaps",
     "bruteforce_q": 19927,
     "dictionary_q": 19927,
-    "ml_q": 507,
-    "ml_speedup": 39.3,
+    "ml_q": 509,
+    "ml_speedup": 39.1,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 58.5
+    "risk": 57
   },
   {
     "format": "H10302-37",
     "numbering": "clustered",
     "bruteforce_q": 48463,
     "dictionary_q": 48463,
-    "ml_q": 356,
-    "ml_speedup": 136.1,
+    "ml_q": 357,
+    "ml_speedup": 135.8,
     "fmt_acc": 1,
     "num_acc": 0.25,
-    "risk": 50.8
+    "risk": 50.5
   },
   {
     "format": "H10302-37",

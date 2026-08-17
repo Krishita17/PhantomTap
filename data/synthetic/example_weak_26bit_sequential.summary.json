@@ -9,5 +9,6 @@
   "card_hi": 37804,
   "uses_default_keys": true,
   "default_key_fraction": 0.6,
-  "key_diversified": false
+  "key_diversified": false,
+  "note": "Classic weak deployment: 26-bit format, sequential numbering, default keys. The archetype PhantomTap flags as CRITICAL."
 }

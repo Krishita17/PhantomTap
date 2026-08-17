@@ -10,19 +10,62 @@
     "card_hi": 37804,
     "uses_default_keys": true,
     "default_key_fraction": 0.6,
-    "key_diversified": false
+    "key_diversified": false,
+    "note": "Classic weak deployment: 26-bit format, sequential numbering, default keys. The archetype PhantomTap flags as CRITICAL."
   },
   {
     "name": "example_strong_37bit_random",
     "format": "H10304-37",
-    "facility_code": 246,
+    "facility_code": 83,
     "numbering": "random",
     "family": "mifare_classic",
     "issued": 120,
-    "card_lo": 11178,
-    "card_hi": 523571,
+    "card_lo": 19659,
+    "card_hi": 513894,
     "uses_default_keys": false,
-    "default_key_fraction": 0.6,
-    "key_diversified": true
+    "default_key_fraction": 0.0,
+    "key_diversified": true,
+    "note": "Hardened deployment: wide 37-bit format, randomized numbering, no default keys, per-card diversified keys."
+  },
+  {
+    "name": "example_h10306_clustered",
+    "format": "H10306-34",
+    "facility_code": 237,
+    "numbering": "clustered",
+    "family": "mifare_classic",
+    "issued": 150,
+    "card_lo": 6475,
+    "card_hi": 59535,
+    "uses_default_keys": true,
+    "default_key_fraction": 0.3,
+    "key_diversified": false,
+    "note": "34-bit H10306 issued in departmental blocks; each block is internally predictable."
+  },
+  {
+    "name": "example_prox_uid_sequential",
+    "format": "H10301-26",
+    "facility_code": 4,
+    "numbering": "sequential",
+    "family": "uid_only",
+    "issued": 100,
+    "card_lo": 31774,
+    "card_hi": 31873,
+    "uses_default_keys": true,
+    "default_key_fraction": 0.0,
+    "key_diversified": false,
+    "note": "Low-frequency UID-only prox (EM4100-class): no authentication, clonable to a blank in seconds. Sequential numbering."
+  },
+  {
+    "name": "example_campus_multifacility",
+    "format": "H10306-34",
+    "facility_codes": [
+      42,
+      118,
+      205
+    ],
+    "numbering": "sequential",
+    "family": "mifare_classic",
+    "issued": 240,
+    "note": "Three-building campus; each building is its own facility code with sequential badge numbers. Multi-facility deployments are common and each facility is internally predictable."
   }
 ]

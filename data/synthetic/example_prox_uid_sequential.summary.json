@@ -1,0 +1,14 @@
+{
+  "name": "example_prox_uid_sequential",
+  "format": "H10301-26",
+  "facility_code": 4,
+  "numbering": "sequential",
+  "family": "uid_only",
+  "issued": 100,
+  "card_lo": 31774,
+  "card_hi": 31873,
+  "uses_default_keys": true,
+  "default_key_fraction": 0.0,
+  "key_diversified": false,
+  "note": "Low-frequency UID-only prox (EM4100-class): no authentication, clonable to a blank in seconds. Sequential numbering."
+}

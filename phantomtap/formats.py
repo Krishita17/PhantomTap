@@ -2,18 +2,23 @@
 
 A :class:`WiegandFormat` describes how a facility code (FC) and card number
 (CN) are packed into a fixed-width bit frame, together with the parity bits that
-bracket the data payload.  These are the *public, documented* formats used by
-the overwhelming majority of physical access-control deployments; nothing here
-is proprietary or site-specific.
+protect it.  These are the *public, documented* formats used by the
+overwhelming majority of physical access-control deployments; nothing here is
+proprietary or site-specific.
 
-The frame layout modelled is the classic one used by HID and compatible
-readers::
+**Real spec alignment.** The field offsets and parity ranges below follow the
+Proxmark3 reference implementation (``client/src/wiegand_formats.c`` in
+RfidResearchGroup/proxmark3), so the encoder is *bit-compatible* with what a
+Proxmark3 or Flipper Zero produces for these formats -- not a simplified
+approximation.  Frame bits are numbered MSB-first (bit 0 is the first bit on the
+wire), exactly as in that source.
 
-    [ leading parity ][ ...data bits... ][ trailing parity ]
+Example (HID H10301, 26-bit)::
 
-where the leading parity covers the high half of the data payload and the
-trailing parity covers the low half.  This is exactly the H10301 (26-bit)
-scheme and generalises cleanly to the wider formats.
+    bit  0: odd  parity over bits 1..12
+    bits 1..16 : card number (16 bits)
+    bits 17..24: facility code (8 bits)
+    bit 25: even parity over bits 13..24
 """
 
 from __future__ import annotations
@@ -23,7 +28,7 @@ from typing import List, Optional, Tuple
 
 
 def _int_to_bits(value: int, width: int) -> List[int]:
-    """Big-endian bit list of ``value`` in ``width`` bits."""
+    """Big-endian (MSB-first) bit list of ``value`` in ``width`` bits."""
     if value < 0 or value >= (1 << width):
         raise ValueError(f"value {value} does not fit in {width} bits")
     return [(value >> (width - 1 - i)) & 1 for i in range(width)]
@@ -44,20 +49,28 @@ def _xor(bits: List[int]) -> int:
 
 
 @dataclass(frozen=True)
-class Parity:
-    """A single parity bit computed over a slice of the *data* bit array.
+class Field:
+    """A named field placed at an MSB-first ``offset`` in the frame."""
 
-    ``kind`` is ``"even"`` or ``"odd"``.  ``start``/``stop`` index into the
-    concatenated data payload (facility code followed by card number).
+    name: str
+    offset: int
+    width: int
+
+
+@dataclass(frozen=True)
+class ParityBit:
+    """A parity bit at frame ``position`` covering frame bits ``[start, stop)``.
+
+    ``kind`` is ``"even"`` or ``"odd"``; the ranges cover *data* bits only.
     """
 
+    position: int
     kind: str
     start: int
     stop: int
 
-    def compute(self, data_bits: List[int]) -> int:
-        chunk = data_bits[self.start:self.stop]
-        x = _xor(chunk)
+    def compute(self, frame: List[int]) -> int:
+        x = _xor(frame[self.start:self.stop])
         return x if self.kind == "even" else (1 ^ x)
 
 
@@ -65,15 +78,31 @@ class Parity:
 class WiegandFormat:
     name: str
     total_bits: int
-    facility_bits: int
-    card_bits: int
-    leading: Parity
-    trailing: Parity
+    fields: Tuple[Field, ...]
+    parities: Tuple[ParityBit, ...]
     description: str = ""
+    proxmark_compatible: bool = False
+
+    # -- derived field accessors ----------------------------------------
+    def _field(self, name: str) -> Optional[Field]:
+        for f in self.fields:
+            if f.name == name:
+                return f
+        return None
+
+    @property
+    def facility_bits(self) -> int:
+        f = self._field("facility")
+        return f.width if f else 0
+
+    @property
+    def card_bits(self) -> int:
+        f = self._field("card")
+        return f.width if f else 0
 
     @property
     def data_bits(self) -> int:
-        return self.facility_bits + self.card_bits
+        return sum(f.width for f in self.fields)
 
     @property
     def max_facility(self) -> int:
@@ -84,47 +113,46 @@ class WiegandFormat:
         return (1 << self.card_bits) - 1
 
     def __post_init__(self) -> None:
-        # A well-formed frame is: 1 leading parity + data + 1 trailing parity.
-        expected = self.data_bits + 2
+        expected = self.data_bits + len(self.parities)
         if expected != self.total_bits:
             raise ValueError(
-                f"{self.name}: data({self.data_bits}) + 2 parity != "
-                f"total({self.total_bits})"
+                f"{self.name}: data({self.data_bits}) + parity({len(self.parities)})"
+                f" != total({self.total_bits})"
             )
 
     # -- encode / decode -------------------------------------------------
     def encode(self, facility_code: int, card_number: int) -> int:
-        """Pack (FC, CN) into the full integer frame value, parity included."""
         if not 0 <= facility_code <= self.max_facility:
             raise ValueError(f"facility_code out of range for {self.name}")
         if not 0 <= card_number <= self.max_card:
             raise ValueError(f"card_number out of range for {self.name}")
-        data = _int_to_bits(facility_code, self.facility_bits) + _int_to_bits(
-            card_number, self.card_bits
-        )
-        frame = [self.leading.compute(data)] + data + [self.trailing.compute(data)]
+        frame = [0] * self.total_bits
+        placements = {"facility": facility_code, "card": card_number}
+        for f in self.fields:
+            bits = _int_to_bits(placements[f.name], f.width)
+            frame[f.offset:f.offset + f.width] = bits
+        for p in self.parities:
+            frame[p.position] = p.compute(frame)
         return _bits_to_int(frame)
 
     def decode(self, raw: int) -> "DecodedCredential":
-        bits = _int_to_bits(raw, self.total_bits)
-        leading, trailing = bits[0], bits[-1]
-        data = bits[1:-1]
-        fc = _bits_to_int(data[: self.facility_bits])
-        cn = _bits_to_int(data[self.facility_bits:])
-        parity_ok = (
-            leading == self.leading.compute(data)
-            and trailing == self.trailing.compute(data)
-        )
-        return DecodedCredential(
-            fmt=self,
-            facility_code=fc,
-            card_number=cn,
-            raw=raw,
-            parity_ok=parity_ok,
-        )
+        frame = _int_to_bits(raw, self.total_bits)
+        fc_f, cn_f = self._field("facility"), self._field("card")
+        fc = _bits_to_int(frame[fc_f.offset:fc_f.offset + fc_f.width]) if fc_f else 0
+        cn = _bits_to_int(frame[cn_f.offset:cn_f.offset + cn_f.width]) if cn_f else 0
+        parity_ok = all(frame[p.position] == p.compute(frame) for p in self.parities)
+        return DecodedCredential(self, fc, cn, raw, parity_ok)
 
     def parity_ok(self, raw: int) -> bool:
         return self.decode(raw).parity_ok
+
+    def layout_str(self) -> str:
+        parts = []
+        for f in sorted(self.fields, key=lambda x: x.offset):
+            parts.append(f"{f.name}@{f.offset}:{f.width}")
+        pp = ", ".join(f"P{p.position}={p.kind}[{p.start}..{p.stop})"
+                       for p in self.parities)
+        return f"{'; '.join(parts)} | {pp}"
 
 
 @dataclass(frozen=True)
@@ -144,63 +172,66 @@ class DecodedCredential:
 
 # ---------------------------------------------------------------------------
 # The registry of public, documented Wiegand formats.
+# Field offsets + parity ranges follow Proxmark3 wiegand_formats.c (MSB-first).
 # ---------------------------------------------------------------------------
-# Leading parity is *even* over the high half of the data payload; trailing
-# parity is *odd* over the low half.  The split points below reproduce the
-# published field boundaries for each format.
-
 H10301_26 = WiegandFormat(
     name="H10301-26",
     total_bits=26,
-    facility_bits=8,
-    card_bits=16,
-    leading=Parity("even", 0, 12),
-    trailing=Parity("odd", 12, 24),
+    fields=(Field("card", 1, 16), Field("facility", 17, 8)),
+    parities=(ParityBit(0, "odd", 1, 13), ParityBit(25, "even", 13, 25)),
     description="HID 26-bit, the ubiquitous legacy format. Tiny 8-bit facility "
     "code space (0-255) makes facility collisions and guessing trivial.",
+    proxmark_compatible=True,
+)
+
+H10306_34 = WiegandFormat(
+    name="H10306-34",
+    total_bits=34,
+    fields=(Field("facility", 1, 16), Field("card", 17, 16)),
+    parities=(ParityBit(0, "even", 1, 17), ParityBit(33, "odd", 17, 33)),
+    description="HID H10306 34-bit. 16-bit facility + 16-bit card. Structurally "
+    "identical to N10002-34.",
+    proxmark_compatible=True,
 )
 
 N10002_34 = WiegandFormat(
     name="N10002-34",
     total_bits=34,
-    facility_bits=16,
-    card_bits=16,
-    leading=Parity("even", 0, 16),
-    trailing=Parity("odd", 16, 32),
+    fields=(Field("facility", 1, 16), Field("card", 17, 16)),
+    parities=(ParityBit(0, "even", 1, 17), ParityBit(33, "odd", 17, 33)),
     description="HID 34-bit. Wider 16-bit facility code, still 16-bit card "
-    "number so per-facility populations stay small.",
+    "number so per-facility populations stay small. Alias of H10306-34.",
+    proxmark_compatible=True,
 )
 
 H10304_37 = WiegandFormat(
     name="H10304-37",
     total_bits=37,
-    facility_bits=16,
-    card_bits=19,
-    leading=Parity("even", 0, 17),
-    trailing=Parity("odd", 17, 35),
+    fields=(Field("facility", 1, 16), Field("card", 17, 19)),
+    parities=(ParityBit(0, "even", 1, 19), ParityBit(36, "odd", 18, 36)),
     description="HID 37-bit. Larger card-number space; stronger against pure "
     "enumeration but still fully predictable if numbering is sequential.",
+    proxmark_compatible=True,
 )
 
 H10302_37 = WiegandFormat(
     name="H10302-37",
     total_bits=37,
-    facility_bits=0,
-    card_bits=35,
-    leading=Parity("even", 0, 18),
-    trailing=Parity("odd", 18, 35),
+    fields=(Field("card", 1, 35),),
+    parities=(ParityBit(0, "even", 1, 19), ParityBit(36, "odd", 19, 36)),
     description="HID 37-bit with NO facility code -- a single 35-bit card "
-    "number. With no facility field to lock, the space cannot be divided by "
-    "facility, so such formats are markedly more enumerable. (Parity split "
-    "modelled with the standard bracket approximation; exact HID map validated "
-    "in Tier-2.)",
+    "number. With no facility field to divide the space by, such formats are "
+    "markedly more enumerable.",
+    proxmark_compatible=True,
 )
 
 # Registry keyed by name plus a convenient list ordered by total width.
-# Note: H10302-37 and H10304-37 share a width but differ in field split and
-# parity ranges, so they remain distinguishable by parity consistency.
-REGISTRY = {f.name: f for f in (H10301_26, N10002_34, H10304_37, H10302_37)}
-ALL_FORMATS: List[WiegandFormat] = sorted(REGISTRY.values(), key=lambda f: f.total_bits)
+# H10306-34 and N10002-34 share a structure (aliases); H10302-37 and H10304-37
+# share a width but differ in fields/parity, so they remain distinguishable.
+REGISTRY = {f.name: f for f in
+            (H10301_26, H10306_34, N10002_34, H10304_37, H10302_37)}
+ALL_FORMATS: List[WiegandFormat] = sorted(REGISTRY.values(),
+                                          key=lambda f: f.total_bits)
 
 
 def get_format(name: str) -> WiegandFormat:

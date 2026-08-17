@@ -1,0 +1,14 @@
+{
+  "name": "example_h10306_clustered",
+  "format": "H10306-34",
+  "facility_code": 237,
+  "numbering": "clustered",
+  "family": "mifare_classic",
+  "issued": 150,
+  "card_lo": 6475,
+  "card_hi": 59535,
+  "uses_default_keys": true,
+  "default_key_fraction": 0.3,
+  "key_diversified": false,
+  "note": "34-bit H10306 issued in departmental blocks; each block is internally predictable."
+}

@@ -1,0 +1,13 @@
+{
+  "name": "example_campus_multifacility",
+  "format": "H10306-34",
+  "facility_codes": [
+    42,
+    118,
+    205
+  ],
+  "numbering": "sequential",
+  "family": "mifare_classic",
+  "issued": 240,
+  "note": "Three-building campus; each building is its own facility code with sequential badge numbers. Multi-facility deployments are common and each facility is internally predictable."
+}

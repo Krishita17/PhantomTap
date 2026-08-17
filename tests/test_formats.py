@@ -42,3 +42,22 @@ def test_out_of_range_rejected():
 def test_unknown_format():
     with pytest.raises(KeyError):
         get_format("does-not-exist")
+
+
+def test_h10306_and_n10002_are_structural_aliases():
+    # Both are 16-bit facility + 16-bit card with the same parity; they must
+    # encode identically for every value.
+    a, b = get_format("H10306-34"), get_format("N10002-34")
+    for fc, cn in [(0, 0), (1, 1), (1234, 56789), (65535, 65535)]:
+        assert a.encode(fc, cn) == b.encode(fc, cn)
+
+
+def test_proxmark_aligned_formats_are_flagged():
+    # Every registered format is aligned to the Proxmark3 reference layout.
+    assert all(f.proxmark_compatible for f in ALL_FORMATS)
+
+
+def test_layout_string_is_descriptive():
+    f = get_format("H10301-26")
+    s = f.layout_str()
+    assert "card@1:16" in s and "facility@17:8" in s and "P0=odd" in s

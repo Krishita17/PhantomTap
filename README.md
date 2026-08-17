@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-39%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-44%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -48,7 +48,7 @@ codes, numbering schemes, weak default keys.
 3. **produces a scored, explainable audit report** ranking how weak a
    deployment is, and why, with concrete remediation.
 
-### Two headline results
+### Headline results
 
 **1. Characterization efficiency.** Across the full format × numbering sweep, ML
 guidance characterizes 90% of an issued population with a **median ~16,000×
@@ -209,7 +209,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 39 tests
+make test          # 44 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -254,13 +254,16 @@ Full table + JSON: [`docs/benchmark_results.md`](docs/benchmark_results.md).
 | H10301-26 | sequential | 7,977,297 | 9,943,377 | **353** | 22,599× | 1.00 | 1.00 |
 | H10301-26 | clustered  | 8,011,137 | 9,977,217 | **357** | 22,440× | 1.00 | 0.12 |
 | H10301-26 | random     | 8,022,236 | 9,988,316 | **59,151** | 136× | 1.00 | 1.00 |
+| H10306-34 | sequential | 7,977,297 | 9,943,377 | **353** | 22,599× | 1.00 | 1.00 |
 | N10002-34 | sequential | 7,977,297 | 9,943,377 | **353** | 22,599× | 1.00 | 1.00 |
 | H10304-37 | sequential | 63,715,665 | 79,444,305 | **353** | 180,498× | 1.00 | 1.00 |
 | H10304-37 | random     | 64,178,091 | 79,906,731 | **474,255** | 135× | 1.00 | 1.00 |
 | H10302-37 | sequential | 19,768 | 19,768 | **353** | 56× | 1.00 | 1.00 |
 | H10302-37 | random     | 944,700 | 944,700 | **943,833** | **1×** | 1.00 | 0.00 |
 
-**Median ML speedup across all 16 configs: 16,084×** (min 1×, max 180,498×).
+**Median ML speedup across all 20 configs: 16,067×** (min 1×, max 180,498×).
+(H10306-34 and N10002-34 produce identical rows — they're structural aliases,
+a nice consistency check on the Proxmark-aligned encoder.)
 
 **How the win works.** ML makes two moves the baselines can't: it (1) *locks the
 facility code* inferred from the reads (dividing the space by the whole
@@ -301,24 +304,45 @@ as "this design is hard to audit — good." The benchmark surfaces it, unedited.
 
 ## Credential-format taxonomy
 
+Field offsets and parity ranges are **aligned to the Proxmark3 reference
+implementation** (`wiegand_formats.c`), so PhantomTap's encoder is bit-compatible
+with real tooling for every format below.
+
 | Format | Bits | Facility | Card | Known weakness |
 |--------|-----:|---------:|-----:|----------------|
 | H10301-26 | 26 | 8-bit (0–255) | 16-bit | Tiny facility space; trivial to guess/collide |
-| N10002-34 | 34 | 16-bit | 16-bit | Small per-facility card space stays enumerable |
+| H10306-34 | 34 | 16-bit | 16-bit | 16-bit card space stays enumerable (alias of N10002) |
+| N10002-34 | 34 | 16-bit | 16-bit | Structurally identical to H10306-34 |
 | H10304-37 | 37 | 16-bit | 19-bit | Resists enumeration, but sequential numbering is fully predictable |
 | H10302-37 | 37 | **none** | 35-bit | No facility field to divide the space by → markedly *more* enumerable |
 
-Real, cited public references — HID format specifications and the community
-MIFARE default-key dictionary shipped with Proxmark3/libnfc/Flipper:
-[`data/reference/wiegand_formats.md`](data/reference/wiegand_formats.md)
-· [`data/reference/default_keys.md`](data/reference/default_keys.md)
-· [`data/reference/mifare_default_keys.dic`](data/reference/mifare_default_keys.dic).
+Card families audited — **EM4100/HID Prox** (125 kHz, UID-only, *no*
+authentication, trivially cloned), **MIFARE Classic** (Crypto-1, academically
+broken), and the hardened **DESFire EV2/EV3** target — are catalogued with the
+primary security literature in
+[`data/reference/card_families_and_context.md`](data/reference/card_families_and_context.md).
+
+All references are real, public, and cited: HID + Proxmark3 format specs, the
+community MIFARE key dictionary, and the Crypto-1/MIFARE cryptanalysis papers.
+[`wiegand_formats.md`](data/reference/wiegand_formats.md)
+· [`default_keys.md`](data/reference/default_keys.md)
+· [`mifare_default_keys.dic`](data/reference/mifare_default_keys.dic)
+· [`card_families_and_context.md`](data/reference/card_families_and_context.md)
+
+### Sample datasets
+
+Five reproducible synthetic datasets ship in
+[`data/synthetic/`](data/synthetic/) — a classic weak 26-bit deployment, a
+hardened 37-bit one, an H10306 departmental-block layout, a clonable UID-only
+prox set, and a **240-credential multi-building campus** spanning three facility
+codes. Regenerate them any time with `make samples` (all frames produced by the
+Proxmark-aligned encoder; no real facility data).
 
 ## Project layout
 
 ```
 phantomtap/
-  formats.py      Wiegand format definitions, parity, encode/decode
+  formats.py      Wiegand formats (Proxmark3-aligned parity + encode/decode)
   population.py   synthetic credential-population generator (the workbench)
   reader.py       simulated reader (accept/reject oracle, counts queries)
   inference.py    format-inference parser (format, facility, numbering, range)
@@ -332,7 +356,7 @@ phantomtap/
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · demo
-tests/            39 pytest cases
+tests/            44 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

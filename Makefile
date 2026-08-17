@@ -1,4 +1,4 @@
-.PHONY: help install dev test demo benchmark figures audit clean
+.PHONY: help install dev test demo benchmark figures audit samples monitor clean
 
 PY ?= python3
 
@@ -11,6 +11,8 @@ help:
 	@echo "  benchmark  attempts-to-characterize sweep -> docs/benchmark_results.*"
 	@echo "  figures    regenerate all charts into docs/figures/"
 	@echo "  audit      render a sample audit report to stdout"
+	@echo "  monitor    blue-team detection demo on a badge-event stream"
+	@echo "  samples    regenerate synthetic datasets into data/synthetic/"
 	@echo "  clean      remove caches and build artifacts"
 
 install:
@@ -33,6 +35,12 @@ figures:
 
 audit:
 	$(PY) -m phantomtap.cli audit --format H10301-26 --numbering sequential
+
+monitor:
+	$(PY) -m phantomtap.cli monitor --format H10301-26 --numbering sequential
+
+samples:
+	$(PY) -m scripts.make_samples
 
 clean:
 	rm -rf build dist *.egg-info .pytest_cache
