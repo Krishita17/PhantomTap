@@ -8,7 +8,7 @@
     "ml_speedup": 22598.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 78.4
+    "risk": 81
   },
   {
     "format": "H10301-26",
@@ -19,7 +19,7 @@
     "ml_speedup": 16083.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 74.8
+    "risk": 77.1
   },
   {
     "format": "H10301-26",
@@ -30,7 +30,7 @@
     "ml_speedup": 22440.2,
     "fmt_acc": 1,
     "num_acc": 0.125,
-    "risk": 69.8
+    "risk": 68.4
   },
   {
     "format": "H10301-26",
@@ -41,7 +41,7 @@
     "ml_speedup": 135.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 56.8
+    "risk": 56.1
   },
   {
     "format": "N10002-34",
@@ -52,7 +52,7 @@
     "ml_speedup": 22598.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 63.6
+    "risk": 69.1
   },
   {
     "format": "N10002-34",
@@ -63,7 +63,7 @@
     "ml_speedup": 16083.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 60.1
+    "risk": 65.1
   },
   {
     "format": "N10002-34",
@@ -74,7 +74,7 @@
     "ml_speedup": 22440.2,
     "fmt_acc": 1,
     "num_acc": 0.125,
-    "risk": 55.1
+    "risk": 56.6
   },
   {
     "format": "N10002-34",
@@ -85,7 +85,7 @@
     "ml_speedup": 135.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 42.4
+    "risk": 44.6
   },
   {
     "format": "H10304-37",
@@ -96,7 +96,7 @@
     "ml_speedup": 180497.6,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 58.4
+    "risk": 65
   },
   {
     "format": "H10304-37",
@@ -107,7 +107,7 @@
     "ml_speedup": 128459.3,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 54.8
+    "risk": 61.1
   },
   {
     "format": "H10304-37",
@@ -118,7 +118,7 @@
     "ml_speedup": 178570.0,
     "fmt_acc": 1,
     "num_acc": 0.625,
-    "risk": 49.8
+    "risk": 52.4
   },
   {
     "format": "H10304-37",
@@ -129,7 +129,7 @@
     "ml_speedup": 135.3,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 36.8
+    "risk": 37.8
   },
   {
     "format": "H10302-37",
@@ -140,7 +140,7 @@
     "ml_speedup": 56.0,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 54.5
+    "risk": 62
   },
   {
     "format": "H10302-37",
@@ -151,7 +151,7 @@
     "ml_speedup": 39.3,
     "fmt_acc": 1,
     "num_acc": 1,
-    "risk": 50.9
+    "risk": 58.5
   },
   {
     "format": "H10302-37",
@@ -162,7 +162,7 @@
     "ml_speedup": 136.1,
     "fmt_acc": 1,
     "num_acc": 0.25,
-    "risk": 46.8
+    "risk": 50.8
   },
   {
     "format": "H10302-37",
@@ -173,6 +173,6 @@
     "ml_speedup": 1.0,
     "fmt_acc": 1,
     "num_acc": 0,
-    "risk": 32.8
+    "risk": 34
   }
 ]

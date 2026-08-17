@@ -1,7 +1,7 @@
 # PhantomTap Access-Control Audit Report
 
 **Deployment:** `H10301-26/sequential/mifare_classic/seed1`  
-**Composite risk score:** **82/100** → **CRITICAL**  
+**Composite risk score:** **84/100** → **CRITICAL**  
 **Format:** H10301-26 · **Facility code:** 35 · **Numbering:** sequential · **Family:** mifare_classic · **Issued:** 500  
 
 > Higher score = weaker / more easily audited deployment. This assessment was produced against a synthetic or author-owned system for defensive evaluation only.
@@ -10,37 +10,44 @@
 
 | # | Severity | Factor | Finding |
 |---|----------|--------|---------|
-| 1 | 🟥 CRITICAL | `numbering` | Numbering scheme: sequential |
-| 2 | 🟥 CRITICAL | `keys` | Sector key hygiene |
-| 3 | 🟧 HIGH | `format` | Credential format: H10301-26 (26-bit) |
-| 4 | 🟧 HIGH | `characterization` | Attempts-to-characterize |
-| 5 | 🟨 MEDIUM | `clonability` | Card family: MIFARE Classic (sectored) |
+| 1 | 🟥 CRITICAL | `guessability` | Credential guessing-resistance: 0.0 bits (TRIVIAL) |
+| 2 | 🟥 CRITICAL | `numbering` | Numbering scheme: sequential |
+| 3 | 🟥 CRITICAL | `keys` | Sector key hygiene |
+| 4 | 🟧 HIGH | `format` | Credential format: H10301-26 (26-bit) |
+| 5 | 🟧 HIGH | `characterization` | Attempts-to-characterize |
+| 6 | 🟨 MEDIUM | `clonability` | Card family: MIFARE Classic (sectored) |
 
-### 1. Numbering scheme: sequential  🟥 CRITICAL
+### 1. Credential guessing-resistance: 0.0 bits (TRIVIAL)  🟥 CRITICAL
+
+- **Factor:** `guessability` (sub-score 100/100)
+- **Detail:** A blind adversary faces ~15.0 bits of guessing to forge a valid credential; one that reasons about structure (locked facility code + bounded 500-wide range at 100.0% density) faces only ~0.0 bits. This deployment therefore **leaks ~15.0 bits** of credential security to a structure-aware attacker.
+- **Remediation:** Widen the effective key space that survives inference: randomise card numbers across the full field and authenticate the credential so a guessed number alone is worthless.
+
+### 2. Numbering scheme: sequential  🟥 CRITICAL
 
 - **Factor:** `numbering` (sub-score 92/100)
 - **Detail:** Card numbers are issued strictly sequentially. Knowing one valid card lets an assessor predict every neighbour with near certainty.
 - **Remediation:** Issue card numbers from a cryptographically random, non-guessable pool and decouple them from any physical/temporal issuance order.
 
-### 2. Sector key hygiene  🟥 CRITICAL
+### 3. Sector key hygiene  🟥 CRITICAL
 
 - **Factor:** `keys` (sub-score 78/100)
 - **Detail:** 11/16 sectors (69%) still carry publicly documented default keys (e.g. 00000000000A, 0123456789AB, 123456789ABC). Keys are shared across the population, so recovering one card compromises all.
 - **Remediation:** Rotate every sector off factory/default keys, use per-card diversified keys derived from a master + UID, and store no key material in the clear.
 
-### 3. Credential format: H10301-26 (26-bit)  🟧 HIGH
+### 4. Credential format: H10301-26 (26-bit)  🟧 HIGH
 
 - **Factor:** `format` (sub-score 100/100)
 - **Detail:** HID 26-bit, the ubiquitous legacy format. Tiny 8-bit facility code space (0-255) makes facility collisions and guessing trivial. The card-number field is 16 bits (max 65,535), and the facility-code field is 8 bits (max 255).
 - **Remediation:** Migrate to a high-bit-count, cryptographically authenticated credential (e.g. Seos / DESFire EV2/EV3, iCLASS SE) rather than a static Wiegand format that can be read and replayed.
 
-### 4. Attempts-to-characterize  🟧 HIGH
+### 5. Attempts-to-characterize  🟧 HIGH
 
 - **Factor:** `characterization` (sub-score 100/100)
 - **Detail:** Guided search characterised 90% of the issued population in 443 reader queries versus ~2,332,513 for brute force (~5,265x fewer attempts). Low attempts-to-characterize is itself a weakness signal.
 - **Remediation:** Randomised numbering and authenticated credentials both raise the query cost of mapping the population.
 
-### 5. Card family: MIFARE Classic (sectored)  🟨 MEDIUM
+### 6. Card family: MIFARE Classic (sectored)  🟨 MEDIUM
 
 - **Factor:** `clonability` (sub-score 45/100)
 - **Detail:** Sectored cards carry per-sector keys, so cloning depends on key strength. MIFARE Classic's Crypto-1 cipher is itself academically broken, so weak/default keys are decisive.
@@ -59,6 +66,10 @@ PhantomTap characterized the population with roughly **5,265× fewer** reader in
 ### Bayesian population sizing
 
 Active-learning boundary search estimated **~516 issued credentials** (true: 500, error 3%) in just **267 reader queries** — recovering the population size in O(log N) rather than scanning O(N). A low error here is itself a weakness: the population is compact and predictable.
+
+### Information-theoretic guessing-resistance
+
+A blind adversary faces **~15.0 bits** of guessing to forge a valid credential; a structure-aware one faces only **~0.0 bits** (TRIVIAL). The deployment **leaks ~15.0 bits** of credential security to anyone who reasons about its structure instead of brute-forcing.
 
 ---
 *Generated by PhantomTap. Authorized, defensive use only.*

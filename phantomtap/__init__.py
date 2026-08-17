@@ -36,6 +36,15 @@ from .generator import (  # noqa: F401
     run_all_methods,
 )
 from .bayes import RangeEstimate, estimate_population  # noqa: F401
+from .entropy import Guessability, assess_guessability  # noqa: F401
+from .monitor import (  # noqa: F401
+    Alert,
+    BadgeEvent,
+    RedBlueResult,
+    analyze,
+    red_vs_blue,
+    synthetic_stream,
+)
 from .audit import AuditResult, Finding, audit_deployment, render_markdown  # noqa: F401
 
 __all__ = [
@@ -61,6 +70,14 @@ __all__ = [
     "run_all_methods",
     "RangeEstimate",
     "estimate_population",
+    "Guessability",
+    "assess_guessability",
+    "Alert",
+    "BadgeEvent",
+    "RedBlueResult",
+    "analyze",
+    "red_vs_blue",
+    "synthetic_stream",
     "AuditResult",
     "Finding",
     "audit_deployment",

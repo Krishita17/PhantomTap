@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-27%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-35%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -18,7 +18,9 @@
   <code>rfid</code> · <code>nfc</code> · <code>flipper-zero</code> ·
   <code>access-control</code> · <code>security-audit</code> ·
   <code>wiegand</code> · <code>mifare</code> · <code>active-learning</code> ·
-  <code>bayesian</code> · <code>physical-security</code> · <code>pentesting</code>
+  <code>bayesian</code> · <code>purple-team</code> ·
+  <code>threat-detection</code> · <code>physical-security</code> ·
+  <code>pentesting</code>
 </p>
 
 ---
@@ -72,6 +74,45 @@ security signal, surfaced rather than buried.
        alt="Bayesian population sizing: O(log N) query cost, and accuracy by numbering scheme">
 </p>
 
+### More than an auditor: a purple-team platform
+
+PhantomTap doesn't just *model* the attack — it **detects** it. A blue-team
+monitor runs four detectors over a stream of badge-reader events:
+
+| Detector | Signature it catches |
+|----------|----------------------|
+| **impossible travel** | one credential at two readers faster than a human could walk → **cloned/replayed** card |
+| **enumeration** | a burst of distinct/rejected creds or a consecutive card-number sweep → someone **scanning** the reader |
+| **off-hours** | an accepted access outside declared business hours |
+| **rogue credential** | a format-valid card **outside the issued range** → forged or guessed number |
+
+The reflexive result: PhantomTap's **own ML auditor is caught by its own
+detector** after ~16–33 presentations — and because guided search walks
+consecutive numbers, it's flagged *at any pace*, while unstructured probing can
+only hide by going so slow it's useless.
+
+<p align="center">
+  <img src="docs/figures/purple_team.png" width="820"
+       alt="Detection coverage and detection-latency vs attacker rate">
+</p>
+
+```bash
+phantomtap monitor --numbering sequential      # detect clone / scan / off-hours / rogue
+```
+
+### Security risk, measured in bits
+
+Every audit reports an **information-theoretic** score: how many bits of guessing
+an adversary faces to forge a valid credential — *before* and *after* reasoning
+about structure. The gap is what the deployment **leaks**. Sequential numbering
+can collapse an informed attacker's work to **near zero bits** (every number in
+the discovered range is valid); randomized numbering preserves it.
+
+<p align="center">
+  <img src="docs/figures/guessability.png" width="640"
+       alt="Effective security vs. structure leakage, in bits, by numbering scheme">
+</p>
+
 ## Why it's novel
 
 - The Flipper community builds **tools, not intelligence**. Existing apps
@@ -83,6 +124,13 @@ security signal, surfaced rather than buried.
   deployment?" in *logarithmic* query cost — a reconnaissance capability distinct
   from exhaustive discovery, and one that degrades *honestly* on hardened
   (randomized) numbering.
+- **Information-theoretic risk in bits.** PhantomTap quantifies how much
+  credential security a deployment *leaks* to a structure-aware adversary —
+  turning "sequential numbering is bad" into "this design leaks ~15 bits."
+- **A purple-team loop.** The same platform that models the attack also
+  **detects** it: clone detection via impossible travel, enumeration/scan
+  detection, off-hours and rogue out-of-range credentials — and it catches
+  *its own* ML auditor within ~16–33 reader presentations.
 - It **bridges hardware hacking and structured software security** — an embedded
   RF device plus host-side sequence modelling plus a reporting engine.
 - **Grounded in real public data.** The default-key detector uses the actual
@@ -99,10 +147,16 @@ flowchart TB
     F <-->|serial / BLE CLI| B["Bridge<br/>(phantomtap.bridge)"]
     B --> P["Format inference<br/>(phantomtap.inference)"]
     P --> G["ML-guided generator<br/>active learning<br/>(phantomtap.generator)"]
+    P --> BAY["Bayesian population sizing<br/>O(log N) (phantomtap.bayes)"]
     G --> SIM["Simulated reader<br/>(phantomtap.reader)"]
     G --> EXEC["Real Flipper execution"]
     G --> AUD["Audit report + risk score<br/>(phantomtap.audit)"]
+    BAY --> AUD
+    ENT["Info-theoretic scoring<br/>(phantomtap.entropy)"] --> AUD
     SIM --> G
+    EV["Badge-event stream"] --> MON["Blue-team monitor<br/>clone · scan · off-hours · rogue<br/>(phantomtap.monitor)"]
+    G -.->|its own footprint is detected| MON
+    MON --> AUD
 ```
 
 Full write-up: [`docs/architecture.md`](docs/architecture.md).
@@ -122,6 +176,9 @@ phantomtap audit --format H10301-26 --numbering sequential --out report.md
 
 # Attempts-to-characterize: ML vs. dictionary vs. brute force:
 phantomtap benchmark --numbering sequential
+
+# Blue-team: detect clone / scan / off-hours / rogue events in a badge stream:
+phantomtap monitor --numbering sequential
 ```
 
 The **entire Tier-1 pipeline runs on the Python standard library alone** — no
@@ -130,7 +187,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 27 tests
+make test          # 35 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -245,12 +302,14 @@ phantomtap/
   inference.py    format-inference parser (format, facility, numbering, range)
   generator.py    brute-force / dictionary baselines + ML-guided auditor
   bayes.py        Bayesian active-learning population-size estimator (O(log N))
+  entropy.py      information-theoretic guessing-resistance (security in bits)
+  monitor.py      blue-team detectors + synthetic badge-event stream + red-vs-blue
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · demo
-tests/            27 pytest cases
+tests/            35 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report
@@ -259,7 +318,8 @@ examples/         a rendered sample audit report
 ## Roadmap (tiers)
 
 - [x] **Tier 1 — software pipeline (no hardware).** Inference + ML-guided
-  generator + audit report, benchmarked against baselines. *(This repo.)*
+  generator + Bayesian population sizing + information-theoretic scoring +
+  blue-team detection + audit report, benchmarked against baselines. *(This repo.)*
 - [ ] **Tier 2 — hardware integration.** Drive a real Flipper over its serial
   CLI on the author's own cards/readers. Seam is [`phantomtap/bridge.py`](phantomtap/bridge.py).
 - [ ] **Tier 3 — research payoff.** Upgrade the generator to a richer

@@ -5,6 +5,7 @@ Subcommands:
     phantomtap demo        end-to-end walkthrough on a synthetic deployment
     phantomtap audit       score a synthetic deployment and print/save a report
     phantomtap benchmark   attempts-to-characterize: ML vs dictionary vs brute
+    phantomtap monitor     blue-team: detect clone/scan/off-hours/rogue events
     phantomtap figures     regenerate all charts into docs/figures/
 """
 
@@ -84,6 +85,33 @@ def cmd_benchmark(args) -> int:
     return 0
 
 
+def cmd_monitor(args) -> int:
+    from .monitor import analyze, red_vs_blue, synthetic_stream
+
+    dep = _dep_from_args(args)
+    events, injected = synthetic_stream(dep, seed=args.seed)
+    alerts = analyze(events, dep=dep)
+    print(f"== PhantomTap blue-team monitor ==")
+    print(f"Deployment: {dep.name}")
+    print(f"Analysed {len(events)} badge events; injected attacks: "
+          f"{', '.join(injected)}")
+    print(f"\n{len(alerts)} alert(s):")
+    for a in alerts:
+        print(f"  [{a.severity.upper():8}] {a.kind:18} t={a.t/3600:05.2f}h  {a.detail}")
+
+    kinds_found = {a.kind for a in alerts}
+    caught = [k for k in injected if k in kinds_found]
+    print(f"\nDetection coverage: {len(caught)}/{len(injected)} injected attack "
+          f"types caught ({', '.join(caught) or 'none'}).")
+
+    rb = red_vs_blue(dep, rate_per_min=40.0)
+    print(f"\nRed-vs-blue: PhantomTap's own ML auditor made {rb.attempts_total:,} "
+          f"reader presentations; the enumeration detector "
+          + (f"flagged it after {rb.detected_after_attempts} attempts."
+             if rb.detected else "did not flag it."))
+    return 0
+
+
 def cmd_figures(args) -> int:
     from scripts import make_figures  # type: ignore
 
@@ -120,6 +148,10 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("benchmark", help="attempts-to-characterize comparison")
     add_common(sp)
     sp.set_defaults(func=cmd_benchmark)
+
+    sp = sub.add_parser("monitor", help="blue-team detection over a badge stream")
+    add_common(sp)
+    sp.set_defaults(func=cmd_monitor)
 
     sp = sub.add_parser("figures", help="regenerate charts into docs/figures/")
     sp.set_defaults(func=cmd_figures)

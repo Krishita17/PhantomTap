@@ -22,11 +22,19 @@ import numpy as np
 
 from phantomtap.audit import audit_deployment
 from phantomtap.bayes import estimate_population
+from phantomtap.entropy import assess_guessability
 from phantomtap.generator import (
     ml_characterize,
     run_all_methods,
 )
 from phantomtap.inference import infer_format
+from phantomtap.monitor import (
+    BadgeEvent,
+    analyze,
+    detect_enumeration,
+    red_vs_blue,
+    synthetic_stream,
+)
 from phantomtap.population import CardFamily, NumberingScheme, generate_deployment
 from phantomtap.reader import SimulatedReader
 
@@ -289,6 +297,120 @@ def fig_population_estimation() -> None:
     _save(fig, "population_estimation")
 
 
+def fig_guessability() -> None:
+    """Information-theoretic view: effective security vs. structure leakage."""
+    schemes = [
+        (NumberingScheme.SEQUENTIAL, "sequential"),
+        (NumberingScheme.CLUSTERED, "clustered"),
+        (NumberingScheme.RANDOM, "random"),
+    ]
+    informed, leaked = [], []
+    for scheme, _ in schemes:
+        gi, gl = [], []
+        for s in range(6):
+            dep = generate_deployment(numbering=scheme, issued=500, seed=s)
+            g = assess_guessability(dep)
+            gi.append(g.informed_guess_bits)
+            gl.append(g.leaked_bits)
+        informed.append(statistics.mean(gi))
+        leaked.append(statistics.mean(gl))
+
+    x = np.arange(len(schemes))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(7.8, 4.5))
+    ax.bar(x - w / 2, informed, w, label="Effective security (bits an\ninformed"
+           " attacker still faces)", color=C_ML)
+    ax.bar(x + w / 2, leaked, w, label="Leaked to structure (bits)", color=C_BF)
+    ax.set_xticks(x, [s[1] for s in schemes])
+    ax.set_ylabel("Bits")
+    ax.set_xlabel("Numbering scheme")
+    ax.set_title("Credential guessing-resistance (information-theoretic)",
+                 fontweight="bold")
+    ax.legend(frameon=False, loc="upper center", fontsize=8.5, ncol=1)
+    for xi, v in zip(x, informed):
+        ax.annotate(f"{v:.1f}", (xi - w / 2, v), textcoords="offset points",
+                    xytext=(0, 3), ha="center", fontsize=8.5, fontweight="bold")
+    for xi, v in zip(x, leaked):
+        ax.annotate(f"{v:.1f}", (xi + w / 2, v), textcoords="offset points",
+                    xytext=(0, 3), ha="center", fontsize=8.5, fontweight="bold")
+    _save(fig, "guessability")
+
+
+def _random_probe_latency(dep, rate_per_min, burst=240, window_s=90.0):
+    """Detection latency (attempts) for a *random* facility probe at a rate."""
+    import random as _r
+    rng = _r.Random(7)
+    fmt = dep.fmt
+    dt = 60.0 / rate_per_min
+    events = []
+    for i in range(burst):
+        cn = rng.randint(0, min(fmt.max_card, 200_000))
+        raw = fmt.encode(dep.facility_code, cn)
+        events.append(BadgeEvent(i * dt, "target", raw, raw in dep.valid_raws, cn))
+    alerts = detect_enumeration(events, window_s=window_s)
+    if not alerts:
+        return None
+    return int(round(min(a.t for a in alerts) / dt)) + 1
+
+
+def fig_purple_team() -> None:
+    """Reflexive result: guided search is *unconditionally* noisier than slow
+    random probing -- its structured footprint is caught fast at any pace."""
+    rates = [2, 5, 10, 20, 40, 80]
+    dep = generate_deployment(numbering=NumberingScheme.SEQUENTIAL, issued=500,
+                              seed=3)
+    ml_lat, rnd_lat = [], []
+    for r in rates:
+        ml_lat.append(red_vs_blue(dep, rate_per_min=r).detected_after_attempts)
+        rnd_lat.append(_random_probe_latency(dep, r))
+
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(11.6, 4.5))
+
+    # left: attack coverage on a mixed stream
+    events, injected = synthetic_stream(dep, seed=3)
+    alerts = analyze(events, dep=dep)
+    kinds = ["impossible_travel", "enumeration", "off_hours", "rogue_credential"]
+    counts = [sum(1 for a in alerts if a.kind == k) for k in kinds]
+    colors = [C_BF, C_DICT, C_ACCENT, "#e08214"]
+    axl.barh(np.arange(len(kinds)), counts, color=colors)
+    axl.set_yticks(np.arange(len(kinds)),
+                   [k.replace("_", "\n") for k in kinds], fontsize=9)
+    axl.invert_yaxis()
+    axl.set_xlabel("Alerts raised")
+    axl.set_title(f"Detection coverage: {len(set(a.kind for a in alerts) & set(injected))}"
+                  f"/{len(injected)} injected attacks caught", fontweight="bold")
+    for yi, c in enumerate(counts):
+        axl.annotate(str(c), (c, yi), xytext=(4, 0), textcoords="offset points",
+                     va="center", fontsize=9, fontweight="bold")
+
+    # right: detection latency vs attacker rate
+    ml_plot = [v if v is not None else np.nan for v in ml_lat]
+    rnd_plot = [v if v is not None else np.nan for v in rnd_lat]
+    top = np.nanmax(ml_plot + rnd_plot) * 1.25
+    axr.plot(rates, ml_plot, "-o", color=C_ML, lw=2, ms=6,
+             label="ML-guided (region-growing)")
+    axr.plot(rates, rnd_plot, "-s", color=C_DICT, lw=2, ms=6,
+             label="Random probing")
+    # mark evaded points for random probing along the bottom
+    for r, v in zip(rates, rnd_lat):
+        if v is None:
+            axr.scatter([r], [2], marker="x", color=C_DICT, s=45, zorder=5)
+            axr.annotate("evades", (r, 2), color=C_DICT, fontsize=8,
+                         ha="center", va="bottom", xytext=(0, 4),
+                         textcoords="offset points", fontweight="bold")
+    axr.set_xscale("log")
+    axr.set_xticks(rates)
+    axr.set_xticklabels([str(r) for r in rates])
+    axr.xaxis.set_minor_formatter(plt.NullFormatter())
+    axr.tick_params(axis="x", which="minor", length=0)
+    axr.set_ylim(0, top)
+    axr.set_xlabel("Attacker attempt rate (per minute)")
+    axr.set_ylabel("Attempts until detected")
+    axr.set_title("Guided search is caught fast at any pace", fontweight="bold")
+    axr.legend(frameon=False, loc="center right", fontsize=9)
+    _save(fig, "purple_team")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -296,6 +418,8 @@ def main() -> None:
     fig_risk_vs_config()
     fig_learning_curve()
     fig_population_estimation()
+    fig_guessability()
+    fig_purple_team()
     print("done.")
 
 

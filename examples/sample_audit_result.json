@@ -1,8 +1,16 @@
 {
   "deployment": "H10301-26/sequential/mifare_classic/seed1",
-  "risk_score": 82,
+  "risk_score": 84,
   "risk_band": "CRITICAL",
   "findings": [
+    {
+      "factor": "guessability",
+      "severity": "critical",
+      "score": 100,
+      "title": "Credential guessing-resistance: 0.0 bits (TRIVIAL)",
+      "detail": "A blind adversary faces ~15.0 bits of guessing to forge a valid credential; one that reasons about structure (locked facility code + bounded 500-wide range at 100.0% density) faces only ~0.0 bits. This deployment therefore **leaks ~15.0 bits** of credential security to a structure-aware attacker.",
+      "remediation": "Widen the effective key space that survives inference: randomise card numbers across the full field and authenticate the credential so a guessed number alone is worthless."
+    },
     {
       "factor": "numbering",
       "severity": "critical",
@@ -52,6 +60,10 @@
     "issued": 500,
     "population_estimate": 516,
     "population_estimate_queries": 267,
-    "population_estimate_error": 0.032
+    "population_estimate_error": 0.032,
+    "naive_guess_bits": 15.03,
+    "informed_guess_bits": 0.0,
+    "leaked_bits": 15.03,
+    "guessability_rating": "TRIVIAL"
   }
 }
