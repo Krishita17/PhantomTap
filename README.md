@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-51%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-55%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -154,6 +154,25 @@ phantomtap fleet --format H10306-34         # audit a synthetic multi-building c
 make case-study                             # full report + SARIF into examples/
 ```
 
+### Attack-path analysis — the path of least resistance to the crown jewels
+
+Per-door scores miss the real risk: an intruder chains the *weakest sequence* of
+doors from the street to a high-value asset. PhantomTap models the estate as a
+graph (zones = nodes, doors = edges weighted by each reader's audit risk) and
+runs Dijkstra to find the **cheapest breach path** — then asks the question no
+per-door score can: *hardening which single door raises that path cost the most?*
+The answer is frequently **not** the estate's weakest door, and the datacenter's
+own strong reader is useless if the intruder walks in through a 26-bit lobby.
+
+<p align="center">
+  <img src="docs/figures/attack_path.png" width="760"
+       alt="Attack-path graph: cheapest breach route to the datacenter and the harden-first door">
+</p>
+
+```bash
+phantomtap attackpath --target datacenter   # path of least resistance + chokepoints
+```
+
 ### Findings flow into your security pipeline (SARIF)
 
 Every audit can export **SARIF 2.1.0** — the OASIS standard GitHub code scanning
@@ -238,7 +257,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 51 tests
+make test          # 55 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -381,13 +400,14 @@ phantomtap/
   monitor.py      blue-team detectors + synthetic badge-event stream + red-vs-blue
   remediation.py  prioritized "what-if" fix roadmap (risk reduction per fix)
   fleet.py        multi-facility campus audit (weakest-link roll-up)
+  attackgraph.py  physical attack-path analysis (Dijkstra + chokepoint ranking)
   sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · make_samples · case_study · demo
-tests/            51 pytest cases
+tests/            55 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

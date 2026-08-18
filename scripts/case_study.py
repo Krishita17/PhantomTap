@@ -14,6 +14,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from phantomtap.attackgraph import build_campus_graph
+from phantomtap.attackgraph import render_markdown as render_attackpath
 from phantomtap.fleet import audit_fleet, render_fleet_markdown
 from phantomtap.population import CardFamily, NumberingScheme, generate_deployment
 from phantomtap.sarif import to_sarif
@@ -45,6 +47,13 @@ def main() -> None:
     fleet = audit_fleet(deps, name="Acme HQ campus")
 
     report = render_fleet_markdown(fleet)
+
+    # Attack-path analysis: which door protects the datacenter best?
+    risk_by_zone = {a.name.split(" ")[0]: a.result.risk_score
+                    for a in fleet.facilities}
+    graph = build_campus_graph(risk_by_zone)
+    report += "\n\n---\n\n" + render_attackpath(graph, "outside", "datacenter")
+
     (EX / "case_study_campus.md").write_text(report)
     print(f"wrote {EX/'case_study_campus.md'}  (fleet risk {fleet.fleet_risk}/100 "
           f"{fleet.fleet_band})")

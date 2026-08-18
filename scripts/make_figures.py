@@ -530,6 +530,77 @@ def fig_fleet() -> None:
     _save(fig, "fleet")
 
 
+def fig_attack_path() -> None:
+    """Attack-graph: the path of least resistance to the datacenter."""
+    from phantomtap.attackgraph import build_campus_graph
+    from phantomtap.audit import quick_risk_score
+
+    buildings = {
+        "lobby": dict(facility_code=42, fmt_name="H10301-26",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.UID_ONLY,
+            uses_default_keys=True, default_key_fraction=0.9, seed=300),
+        "garage": dict(facility_code=90, fmt_name="H10301-26",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.5, seed=310),
+        "east-wing": dict(facility_code=118, fmt_name="H10306-34",
+            numbering=NumberingScheme.CLUSTERED, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.4, seed=301),
+        "west-wing": dict(facility_code=205, fmt_name="H10306-34",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.2, seed=302),
+        "datacenter": dict(facility_code=250, fmt_name="H10304-37",
+            numbering=NumberingScheme.RANDOM, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=False, key_diversified=True, seed=303),
+    }
+    risks = {z: quick_risk_score(generate_deployment(issued=120, **kw))
+             for z, kw in buildings.items()}
+    g = build_campus_graph(risks)
+    path = g.cheapest_path("outside", "datacenter")
+    chokes = g.harden_priorities("outside", "datacenter")
+    top_choke = chokes[0].door if chokes else None
+    pos = g.positions
+    path_doors = set(path.doors)
+
+    fig, ax = plt.subplots(figsize=(9.6, 5.0))
+    # edges
+    for d in g.doors:
+        x0, y0 = pos[d.frm]
+        x1, y1 = pos[d.to]
+        on = d.name in path_doors
+        ax.plot([x0, x1], [y0, y1], "-", lw=4 if on else 1.6,
+                color=C_BF if on else GRID, zorder=1,
+                solid_capstyle="round")
+        mx, my = (x0 + x1) / 2, (y0 + y1) / 2
+        lbl = f"{d.name}\ncost {d.breach_cost}"
+        ax.annotate(lbl, (mx, my), fontsize=7,
+                    color=C_BF if on else "#888", ha="center", va="center",
+                    fontweight="bold" if on else "normal",
+                    bbox=dict(boxstyle="round,pad=0.15", fc="white",
+                              ec="none", alpha=0.85))
+    # nodes
+    for z, (x, y) in pos.items():
+        risk = risks.get(z)
+        is_target = z == "datacenter"
+        is_entry = z == "outside"
+        col = (C_ML if is_target else "#333" if is_entry else
+               C_BF if (risk or 0) >= 70 else "#f4a582" if (risk or 0) >= 50
+               else C_ACCENT)
+        ax.scatter([x], [y], s=1400 if (is_target or is_entry) else 1100,
+                   c=col, zorder=3, edgecolor="white", linewidth=2,
+                   marker="*" if is_target else "o")
+        sub = "CROWN JEWEL" if is_target else "ENTRY" if is_entry else f"risk {risk}"
+        ax.annotate(f"{z}\n{sub}", (x, y), fontsize=8.5, ha="center", va="center",
+                    color="white", fontweight="bold", zorder=4)
+
+    title = (f"Attack path to datacenter — breach cost {path.cost}"
+             + (f"; harden '{top_choke}' first" if top_choke else ""))
+    ax.set_title(title, fontweight="bold")
+    ax.axis("off")
+    ax.set_xlim(-0.4, 3.9)
+    ax.set_ylim(-0.2, 2.2)
+    _save(fig, "attack_path")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -542,6 +613,7 @@ def main() -> None:
     fig_remediation()
     fig_risk_factors()
     fig_fleet()
+    fig_attack_path()
     print("done.")
 
 

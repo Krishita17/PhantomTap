@@ -60,6 +60,13 @@ from .fleet import (  # noqa: F401
     render_fleet_markdown,
 )
 from .sarif import to_sarif  # noqa: F401
+from .attackgraph import (  # noqa: F401
+    AccessGraph,
+    AttackPath,
+    Chokepoint,
+    Door,
+    build_campus_graph,
+)
 
 __all__ = [
     "__version__",
@@ -105,4 +112,9 @@ __all__ = [
     "audit_fleet",
     "render_fleet_markdown",
     "to_sarif",
+    "AccessGraph",
+    "AttackPath",
+    "Chokepoint",
+    "Door",
+    "build_campus_graph",
 ]

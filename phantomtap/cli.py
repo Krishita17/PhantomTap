@@ -143,6 +143,38 @@ def cmd_monitor(args) -> int:
     return 0
 
 
+def cmd_attackpath(args) -> int:
+    from .attackgraph import build_campus_graph, render_markdown
+    from .audit import quick_risk_score
+    from .population import CardFamily, NumberingScheme, generate_deployment
+
+    # Per-building deployments -> audit risk -> door breach costs.
+    buildings = {
+        "lobby": dict(facility_code=42, fmt_name="H10301-26",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.UID_ONLY,
+            uses_default_keys=True, default_key_fraction=0.9, seed=300),
+        "east-wing": dict(facility_code=118, fmt_name="H10306-34",
+            numbering=NumberingScheme.CLUSTERED, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.4, seed=301),
+        "west-wing": dict(facility_code=205, fmt_name="H10306-34",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.2, seed=302),
+        "datacenter": dict(facility_code=250, fmt_name="H10304-37",
+            numbering=NumberingScheme.RANDOM, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=False, key_diversified=True, seed=303),
+    }
+    risks = {z: quick_risk_score(generate_deployment(issued=120, **kw))
+             for z, kw in buildings.items()}
+    graph = build_campus_graph(risks)
+    report = render_markdown(graph, "outside", args.target)
+    if args.out:
+        Path(args.out).write_text(report)
+        print(f"wrote attack-path report to {args.out}")
+    else:
+        print(report)
+    return 0
+
+
 def cmd_figures(args) -> int:
     from scripts import make_figures  # type: ignore
 
@@ -181,6 +213,14 @@ def build_parser() -> argparse.ArgumentParser:
     add_common(sp)
     sp.add_argument("--out", help="write the fleet report to this path")
     sp.set_defaults(func=cmd_fleet)
+
+    sp = sub.add_parser("attackpath",
+                        help="path-of-least-resistance to a crown-jewel zone")
+    add_common(sp)
+    sp.add_argument("--target", default="datacenter",
+                    help="crown-jewel zone to reach (default: datacenter)")
+    sp.add_argument("--out", help="write the attack-path report to this path")
+    sp.set_defaults(func=cmd_attackpath)
 
     sp = sub.add_parser("benchmark", help="attempts-to-characterize comparison")
     add_common(sp)
