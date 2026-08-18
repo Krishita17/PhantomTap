@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-44%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-51%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -135,6 +135,35 @@ sequenced roadmap. Every audit report ends with this table:
        alt="Weighted risk-factor contributions, weak vs strong deployment">
 </p>
 
+### Fleet auditing — a campus is as weak as its weakest building
+
+Real estates run *many* facility codes — one per building or department. An
+attacker walks in through the softest door, so PhantomTap rolls per-facility
+audits up into a **weakest-link** fleet score (the worst building weighted 70%).
+The bundled [case study](examples/case_study_campus.md) audits a four-building
+campus end-to-end: an old lobby on 26-bit prox drags a datacenter-grade estate
+down to **HIGH**.
+
+<p align="center">
+  <img src="docs/figures/fleet.png" width="720"
+       alt="Fleet audit: per-building risk with the weakest-link roll-up">
+</p>
+
+```bash
+phantomtap fleet --format H10306-34         # audit a synthetic multi-building campus
+make case-study                             # full report + SARIF into examples/
+```
+
+### Findings flow into your security pipeline (SARIF)
+
+Every audit can export **SARIF 2.1.0** — the OASIS standard GitHub code scanning
+and security dashboards ingest — so badge-system risk is tracked and triaged
+right beside software vulnerabilities.
+
+```bash
+phantomtap audit --numbering sequential --sarif findings.sarif
+```
+
 ## Why it's novel
 
 - The Flipper community builds **tools, not intelligence**. Existing apps
@@ -209,7 +238,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 44 tests
+make test          # 51 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -351,12 +380,14 @@ phantomtap/
   entropy.py      information-theoretic guessing-resistance (security in bits)
   monitor.py      blue-team detectors + synthetic badge-event stream + red-vs-blue
   remediation.py  prioritized "what-if" fix roadmap (risk reduction per fix)
+  fleet.py        multi-facility campus audit (weakest-link roll-up)
+  sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
-scripts/          make_figures · run_benchmark · demo
-tests/            44 pytest cases
+scripts/          make_figures · run_benchmark · make_samples · case_study · demo
+tests/            51 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

@@ -53,6 +53,13 @@ from .audit import (  # noqa: F401
     render_markdown,
 )
 from .remediation import Fix, candidate_fixes, prioritized_plan  # noqa: F401
+from .fleet import (  # noqa: F401
+    FacilityAudit,
+    FleetResult,
+    audit_fleet,
+    render_fleet_markdown,
+)
+from .sarif import to_sarif  # noqa: F401
 
 __all__ = [
     "__version__",
@@ -93,4 +100,9 @@ __all__ = [
     "Fix",
     "candidate_fixes",
     "prioritized_plan",
+    "FacilityAudit",
+    "FleetResult",
+    "audit_fleet",
+    "render_fleet_markdown",
+    "to_sarif",
 ]

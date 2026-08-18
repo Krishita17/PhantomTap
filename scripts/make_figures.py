@@ -486,6 +486,50 @@ def fig_risk_factors() -> None:
     _save(fig, "risk_factors")
 
 
+def fig_fleet() -> None:
+    """Multi-facility campus: per-building risk and the weakest-link roll-up."""
+    from phantomtap.fleet import audit_fleet
+
+    specs = [
+        ("bldg-A (fc42)", dict(facility_code=42, fmt_name="H10301-26",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.UID_ONLY,
+            uses_default_keys=True, default_key_fraction=0.9, seed=300)),
+        ("bldg-B (fc118)", dict(facility_code=118, fmt_name="H10306-34",
+            numbering=NumberingScheme.CLUSTERED, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.4, seed=301)),
+        ("bldg-C (fc205)", dict(facility_code=205, fmt_name="H10306-34",
+            numbering=NumberingScheme.SEQUENTIAL, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=True, default_key_fraction=0.2, seed=302)),
+        ("bldg-D (fc250)", dict(facility_code=250, fmt_name="H10304-37",
+            numbering=NumberingScheme.RANDOM, family=CardFamily.MIFARE_CLASSIC,
+            uses_default_keys=False, default_key_fraction=0.0,
+            key_diversified=True, seed=303)),
+    ]
+    deps = [generate_deployment(issued=120, name=n, **kw) for n, kw in specs]
+    fleet = audit_fleet(deps, name="campus")
+    names = [f.name for f in fleet.facilities]
+    risks = [f.result.risk_score for f in fleet.facilities]
+
+    fig, ax = plt.subplots(figsize=(8.6, 4.6))
+    colors = [C_BF if r >= 75 else "#f4a582" if r >= 55 else "#92c5de"
+              if r >= 35 else C_ML for r in risks]
+    y = np.arange(len(names))
+    ax.barh(y, risks, color=colors)
+    ax.axvline(fleet.fleet_risk, color="#222", lw=2, ls="--",
+               label=f"Fleet risk (weakest-link) = {fleet.fleet_risk}")
+    ax.set_yticks(y, names, fontsize=9)
+    ax.invert_yaxis()
+    ax.set_xlim(0, 100)
+    ax.set_xlabel("Composite risk score")
+    ax.set_title("Fleet audit: a campus is as weak as its weakest building",
+                 fontweight="bold")
+    ax.legend(frameon=False, loc="lower right")
+    for yi, r in zip(y, risks):
+        ax.annotate(str(r), (r, yi), xytext=(4, 0), textcoords="offset points",
+                    va="center", fontsize=9, fontweight="bold")
+    _save(fig, "fleet")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -497,6 +541,7 @@ def main() -> None:
     fig_purple_team()
     fig_remediation()
     fig_risk_factors()
+    fig_fleet()
     print("done.")
 
 

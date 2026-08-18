@@ -63,6 +63,37 @@ def cmd_audit(args) -> int:
     if args.json:
         Path(args.json).write_text(json.dumps(result.as_dict(), indent=2))
         print(f"wrote json to {args.json}")
+    if args.sarif:
+        from .sarif import to_sarif
+        Path(args.sarif).write_text(json.dumps(to_sarif(result), indent=2))
+        print(f"wrote SARIF to {args.sarif}")
+    return 0
+
+
+def cmd_fleet(args) -> int:
+    from .fleet import audit_fleet, render_fleet_markdown
+    from .population import CardFamily, NumberingScheme, generate_deployment
+
+    # A synthetic multi-building campus: several facility codes, mixed posture.
+    specs = [
+        dict(facility_code=42, numbering=NumberingScheme.SEQUENTIAL,
+             uses_default_keys=True, default_key_fraction=0.6, seed=300),
+        dict(facility_code=118, numbering=NumberingScheme.CLUSTERED,
+             uses_default_keys=True, default_key_fraction=0.3, seed=301),
+        dict(facility_code=205, numbering=NumberingScheme.RANDOM,
+             uses_default_keys=False, default_key_fraction=0.0,
+             key_diversified=True, seed=302),
+    ]
+    deps = [generate_deployment(fmt_name=args.format, family=CardFamily.MIFARE_CLASSIC,
+                                issued=args.issued, name=f"building-fc{s['facility_code']}",
+                                **s) for s in specs]
+    fleet = audit_fleet(deps, name="synthetic-campus")
+    report = render_fleet_markdown(fleet)
+    if args.out:
+        Path(args.out).write_text(report)
+        print(f"wrote fleet report to {args.out}")
+    else:
+        print(report)
     return 0
 
 
@@ -143,7 +174,13 @@ def build_parser() -> argparse.ArgumentParser:
     add_common(sp)
     sp.add_argument("--out", help="write Markdown report to this path")
     sp.add_argument("--json", help="write JSON result to this path")
+    sp.add_argument("--sarif", help="write SARIF 2.1.0 findings to this path")
     sp.set_defaults(func=cmd_audit)
+
+    sp = sub.add_parser("fleet", help="audit a multi-facility campus (weakest-link)")
+    add_common(sp)
+    sp.add_argument("--out", help="write the fleet report to this path")
+    sp.set_defaults(func=cmd_fleet)
 
     sp = sub.add_parser("benchmark", help="attempts-to-characterize comparison")
     add_common(sp)
