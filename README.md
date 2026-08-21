@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-55%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-60%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -19,7 +19,8 @@
   <code>access-control</code> · <code>security-audit</code> ·
   <code>wiegand</code> · <code>mifare</code> · <code>active-learning</code> ·
   <code>bayesian</code> · <code>purple-team</code> ·
-  <code>threat-detection</code> · <code>physical-security</code> ·
+  <code>threat-detection</code> · <code>counter-surveillance</code> ·
+  <code>physical-security</code> ·
   <code>pentesting</code>
 </p>
 
@@ -173,6 +174,28 @@ own strong reader is useless if the intruder walks in through a 26-bit lobby.
 phantomtap attackpath --target datacenter   # path of least resistance + chokepoints
 ```
 
+### Counter-surveillance — rogue-reader / skimmer detection
+
+Inspired by the **[Specter](https://github.com/at0m-b0mb/Specter-FlipperZero)**
+project (a *passive* Flipper Zero bug-sweep that listens for the RF carrier a
+powered-on reader emits), PhantomTap adds the analysis half. A reader's carrier
+has a **timing fingerprint** — polling period, burst width, duty cycle, and the
+tell-tale **jitter** of a cheap clone versus a real terminal. PhantomTap
+classifies each sensed emitter against a profile library and flags covert
+devices — a skimmer taped inside an ATM, a rogue logger under a desk — answering
+Specter's four questions: *what is it, where is it (proximity), is the room
+clean, did one show up while I was away (watch mode)*. All on a synthetic RF
+environment; nothing transmits.
+
+<p align="center">
+  <img src="docs/figures/rogue_reader.png" width="820"
+       alt="Rogue-reader detection: emitters separate by timing fingerprint; a room sweep flags the rogues">
+</p>
+
+```bash
+phantomtap sweep        # passive RF sweep: classify emitters, flag rogue readers
+```
+
 ### Findings flow into your security pipeline (SARIF)
 
 Every audit can export **SARIF 2.1.0** — the OASIS standard GitHub code scanning
@@ -257,7 +280,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 55 tests
+make test          # 60 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -401,13 +424,14 @@ phantomtap/
   remediation.py  prioritized "what-if" fix roadmap (risk reduction per fix)
   fleet.py        multi-facility campus audit (weakest-link roll-up)
   attackgraph.py  physical attack-path analysis (Dijkstra + chokepoint ranking)
+  rfsweep.py      rogue-reader / skimmer detection by RF carrier fingerprint
   sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · make_samples · case_study · demo
-tests/            55 pytest cases
+tests/            60 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

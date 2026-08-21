@@ -175,6 +175,26 @@ def cmd_attackpath(args) -> int:
     return 0
 
 
+def cmd_sweep(args) -> int:
+    from .rfsweep import synthetic_sweep, sweep, watch_detection_latency
+
+    obs, rogue_locs = synthetic_sweep(seed=args.seed)
+    res = sweep(obs)
+    print("== PhantomTap RF counter-surveillance sweep ==")
+    print("(passive rogue-reader / skimmer detection — inspired by Specter)")
+    print(f"\nRoom verdict: {'🟥 DIRTY' if not res.clean else '🟩 CLEAN'} — "
+          f"{len(res.rogues)} rogue(s) among {len(res.detections)} sensed emitters\n")
+    print(f"  {'location':18}{'classified':17}{'proximity':10}{'conf':6}rogue")
+    for d in sorted(res.detections, key=lambda d: (not d.is_rogue, d.location)):
+        flag = "⚠️  ROGUE" if d.is_rogue else ""
+        print(f"  {d.location:18}{d.classified_kind:17}{d.proximity:10}"
+              f"{d.confidence:<6.2f}{flag}")
+    lat = watch_detection_latency(seed=args.seed)
+    print(f"\nWatch mode: a skimmer appearing mid-shift is flagged in "
+          f"{lat} measurement tick(s).")
+    return 0
+
+
 def cmd_figures(args) -> int:
     from scripts import make_figures  # type: ignore
 
@@ -221,6 +241,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="crown-jewel zone to reach (default: datacenter)")
     sp.add_argument("--out", help="write the attack-path report to this path")
     sp.set_defaults(func=cmd_attackpath)
+
+    sp = sub.add_parser("sweep",
+                        help="passive rogue-reader / skimmer detection (RF sweep)")
+    sp.add_argument("--seed", type=int, default=0)
+    sp.set_defaults(func=cmd_sweep)
 
     sp = sub.add_parser("benchmark", help="attempts-to-characterize comparison")
     add_common(sp)

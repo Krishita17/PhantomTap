@@ -1,4 +1,4 @@
-.PHONY: help install dev test demo benchmark figures audit samples monitor fleet attackpath case-study clean
+.PHONY: help install dev test demo benchmark figures audit samples monitor fleet attackpath sweep case-study clean
 
 PY ?= python3
 
@@ -14,6 +14,7 @@ help:
 	@echo "  monitor    blue-team detection demo on a badge-event stream"
 	@echo "  fleet      multi-facility campus audit (weakest-link roll-up)"
 	@echo "  attackpath path-of-least-resistance to a crown-jewel zone"
+	@echo "  sweep      passive rogue-reader / skimmer detection (RF)"
 	@echo "  case-study full fleet audit -> examples/case_study_campus.{md,sarif}"
 	@echo "  samples    regenerate synthetic datasets into data/synthetic/"
 	@echo "  clean      remove caches and build artifacts"
@@ -47,6 +48,9 @@ fleet:
 
 attackpath:
 	$(PY) -m phantomtap.cli attackpath --target datacenter
+
+sweep:
+	$(PY) -m phantomtap.cli sweep
 
 case-study:
 	$(PY) -m scripts.case_study

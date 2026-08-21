@@ -67,6 +67,16 @@ from .attackgraph import (  # noqa: F401
     Door,
     build_campus_graph,
 )
+from .rfsweep import (  # noqa: F401
+    Detection,
+    EmitterObservation,
+    EmitterProfile,
+    SweepResult,
+    classify,
+    proximity_band,
+    sweep,
+    synthetic_sweep,
+)
 
 __all__ = [
     "__version__",
@@ -117,4 +127,12 @@ __all__ = [
     "Chokepoint",
     "Door",
     "build_campus_graph",
+    "Detection",
+    "EmitterObservation",
+    "EmitterProfile",
+    "SweepResult",
+    "classify",
+    "proximity_band",
+    "sweep",
+    "synthetic_sweep",
 ]

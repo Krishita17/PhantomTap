@@ -601,6 +601,60 @@ def fig_attack_path() -> None:
     _save(fig, "attack_path")
 
 
+def fig_rogue_reader() -> None:
+    """Counter-surveillance: rogue readers separate from legit ones in the
+    carrier-timing fingerprint space (Specter-inspired)."""
+    import random as _r
+    from phantomtap.rfsweep import PROFILES, EmitterObservation, classify
+
+    rng = _r.Random(11)
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(11.6, 4.6))
+
+    # Left: sampled emitters in (polling period, jitter) space.
+    for p in PROFILES:
+        col = C_ML if p.legit else C_BF
+        marker = "o" if p.legit else "X"
+        xs, ys = [], []
+        for _ in range(40):
+            noise = 0.10 + p.jitter_ms / 200.0
+            xs.append(max(1, p.polling_period_ms * (1 + rng.gauss(0, noise))))
+            ys.append(max(0, p.jitter_ms * (1 + rng.gauss(0, 0.25))))
+        axl.scatter(xs, ys, s=22, c=col, marker=marker, alpha=0.55,
+                    edgecolor="none",
+                    label=f"{p.name}{'' if p.legit else '  (ROGUE)'}")
+        axl.annotate(p.name, (p.polling_period_ms, p.jitter_ms), fontsize=7.5,
+                     ha="center", va="center", fontweight="bold",
+                     color="#222",
+                     bbox=dict(boxstyle="round,pad=0.15", fc="white", ec=col, alpha=0.9))
+    axl.set_xlabel("Carrier polling period (ms)")
+    axl.set_ylabel("Timing jitter (ms)")
+    axl.set_title("Rogue readers betray themselves by timing jitter",
+                  fontweight="bold")
+    axl.legend(frameon=False, fontsize=7.2, loc="upper center", ncol=2)
+
+    # Right: a room sweep — emitters by proximity, rogues flagged.
+    from phantomtap.rfsweep import synthetic_sweep, sweep as run_sweep
+    obs, _ = synthetic_sweep(seed=3)
+    res = run_sweep(obs)
+    dets = sorted(res.detections, key=lambda d: d.is_rogue)
+    y = np.arange(len(dets))
+    conf = [d.confidence for d in dets]
+    colors = [C_BF if d.is_rogue else C_ML for d in dets]
+    axr.barh(y, conf, color=colors)
+    labels = [f"{d.location}\n{d.classified_kind} · {d.proximity}" for d in dets]
+    axr.set_yticks(y, labels, fontsize=7.5)
+    axr.set_xlim(0, 1)
+    axr.set_xlabel("Classification confidence")
+    axr.set_title(f"Room sweep: {len(res.rogues)} rogue(s) found "
+                  f"→ {'DIRTY' if not res.clean else 'CLEAN'}", fontweight="bold")
+    for yi, d in zip(y, dets):
+        if d.is_rogue:
+            axr.annotate("⚠ ROGUE", (d.confidence, yi), xytext=(4, 0),
+                         textcoords="offset points", va="center", fontsize=8,
+                         color=C_BF, fontweight="bold")
+    _save(fig, "rogue_reader")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -614,6 +668,7 @@ def main() -> None:
     fig_risk_factors()
     fig_fleet()
     fig_attack_path()
+    fig_rogue_reader()
     print("done.")
 
 
