@@ -195,6 +195,19 @@ def cmd_sweep(args) -> int:
     return 0
 
 
+def cmd_eval(args) -> int:
+    from .evaluation import evaluate_all, render_markdown
+
+    rep = evaluate_all(seed=args.seed)
+    report = render_markdown(rep)
+    if args.out:
+        Path(args.out).write_text(report)
+        print(f"wrote evaluation to {args.out}")
+    else:
+        print(report)
+    return 0
+
+
 def cmd_figures(args) -> int:
     from scripts import make_figures  # type: ignore
 
@@ -246,6 +259,12 @@ def build_parser() -> argparse.ArgumentParser:
                         help="passive rogue-reader / skimmer detection (RF sweep)")
     sp.add_argument("--seed", type=int, default=0)
     sp.set_defaults(func=cmd_sweep)
+
+    sp = sub.add_parser("eval",
+                        help="evaluation metrics across all classifiers/detectors")
+    sp.add_argument("--seed", type=int, default=0)
+    sp.add_argument("--out", help="write the evaluation report to this path")
+    sp.set_defaults(func=cmd_eval)
 
     sp = sub.add_parser("benchmark", help="attempts-to-characterize comparison")
     add_common(sp)

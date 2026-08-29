@@ -655,6 +655,57 @@ def fig_rogue_reader() -> None:
     _save(fig, "rogue_reader")
 
 
+def fig_eval() -> None:
+    """Evaluation dashboard: ROC of rogue-reader detection + inference confusion."""
+    from phantomtap.evaluation import (
+        eval_inference,
+        eval_rogue_reader,
+        eval_risk_ranking,
+        roc_auc,
+        roc_curve,
+    )
+
+    rr = eval_rogue_reader(trials=120, seed=0)
+    inf = eval_inference(trials=200, seed=0)
+
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(11.6, 4.8))
+
+    # Left: ROC curve for rogue-reader detection
+    yt = rr["_curve"]["y_true"]
+    sc = rr["_curve"]["scores"]
+    pts = roc_curve(yt, sc)
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    axl.plot(xs, ys, "-", color=C_ML, lw=2.4,
+             label=f"Rogue-reader detection (AUC {rr['roc_auc']:.3f})")
+    axl.plot([0, 1], [0, 1], "--", color=GRID, lw=1.2, label="chance")
+    axl.set_xlabel("False-positive rate")
+    axl.set_ylabel("True-positive rate")
+    axl.set_title("ROC — rogue-reader / skimmer detection", fontweight="bold")
+    axl.legend(frameon=False, loc="lower right", fontsize=9)
+    axl.set_xlim(-0.02, 1.02); axl.set_ylim(-0.02, 1.02)
+
+    # Right: format-inference confusion matrix
+    labels = inf["_confusion"]["labels"]
+    M = np.array(inf["_confusion"]["matrix"], dtype=float)
+    Mn = M / M.sum(axis=1, keepdims=True).clip(min=1)
+    im = axr.imshow(Mn, cmap="Greens", vmin=0, vmax=1, aspect="auto")
+    axr.set_xticks(range(len(labels)), labels, rotation=35, ha="right", fontsize=8)
+    axr.set_yticks(range(len(labels)), labels, fontsize=8)
+    axr.set_xlabel("Predicted (narrowest consistent)")
+    axr.set_ylabel("True format")
+    axr.set_title(f"Format inference confusion "
+                  f"(consistent recall {inf['format_consistent_recall']:.2f})",
+                  fontweight="bold")
+    for r in range(len(labels)):
+        for c in range(len(labels)):
+            if M[r, c]:
+                axr.annotate(int(M[r, c]), (c, r), ha="center", va="center",
+                             fontsize=8,
+                             color="white" if Mn[r, c] > 0.5 else "#333")
+    _save(fig, "eval_metrics")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -669,6 +720,7 @@ def main() -> None:
     fig_fleet()
     fig_attack_path()
     fig_rogue_reader()
+    fig_eval()
     print("done.")
 
 

@@ -127,14 +127,18 @@ def synthetic_stream(
     staff = dep.credentials[:min(n_employees, len(dep.credentials))]
 
     # --- normal traffic: business hours, a few badge-ins per employee ------
+    # A real person moves continuously: their badge-ins are spaced out in time,
+    # never seconds apart at distant readers. Enforcing a per-employee minimum
+    # gap keeps legitimate traffic from looking like impossible travel.
     for day in range(days):
         base = day * 86400
         for cred in staff:
-            for _ in range(rng.randint(2, 6)):
-                hour = rng.uniform(8.0, 18.0)
-                t = base + hour * SECONDS_PER_HOUR + rng.uniform(0, 120)
+            n = rng.randint(2, 6)
+            t = base + rng.uniform(8.0, 10.0) * SECONDS_PER_HOUR
+            for _ in range(n):
                 events.append(BadgeEvent(t, rng.choice(readers), cred.raw,
                                          True, cred.card_number))
+                t += rng.uniform(1800, 5400)   # 30–90 min between this person's badges
 
     injected: List[str] = []
     if inject and staff:

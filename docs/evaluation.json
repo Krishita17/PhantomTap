@@ -1,0 +1,134 @@
+{
+  "format_inference": {
+    "trials": 200,
+    "format_top1_accuracy": 0.725,
+    "format_consistent_recall": 1.0,
+    "numbering_class_accuracy": 0.675,
+    "confusion": {
+      "labels": [
+        "H10301-26",
+        "H10306-34",
+        "H10304-37",
+        "H10302-37"
+      ],
+      "matrix": [
+        [
+          50,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          45,
+          0,
+          0
+        ],
+        [
+          1,
+          15,
+          34,
+          0
+        ],
+        [
+          11,
+          23,
+          0,
+          16
+        ]
+      ]
+    }
+  },
+  "rogue_reader_detection": {
+    "n": 600,
+    "precision": 1.0,
+    "recall": 0.996,
+    "f1": 0.998,
+    "accuracy": 0.998,
+    "balanced_accuracy": 0.998,
+    "mcc": 0.997,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "confusion": {
+      "labels": [
+        "access_reader",
+        "payment_terminal",
+        "transit_gate",
+        "skimmer",
+        "rogue_logger",
+        "unknown"
+      ],
+      "matrix": [
+        [
+          119,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          120,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          119,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          110,
+          0,
+          9
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          94,
+          26
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    }
+  },
+  "anomaly_monitor": {
+    "trials": 60,
+    "recall_by_attack": {
+      "impossible_travel": 1.0,
+      "enumeration": 1.0,
+      "off_hours": 1.0,
+      "rogue_credential": 1.0
+    },
+    "mean_recall": 1.0,
+    "clean_stream_false_alarm_rate": 0.0
+  },
+  "bayesian_sizing": {
+    "trials": 40,
+    "sequential_sizing_mape": 0.032,
+    "randomized_resistance_recall": 1.0
+  },
+  "risk_ranking": {
+    "auc_weak_vs_strong": 1.0,
+    "spearman_rho": 1.0,
+    "n": 40
+  }
+}

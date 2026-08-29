@@ -77,6 +77,15 @@ from .rfsweep import (  # noqa: F401
     sweep,
     synthetic_sweep,
 )
+from .evaluation import (  # noqa: F401
+    EvalReport,
+    average_precision,
+    evaluate_all,
+    mcc,
+    precision_recall_f1,
+    roc_auc,
+    spearman,
+)
 
 __all__ = [
     "__version__",
@@ -135,4 +144,11 @@ __all__ = [
     "proximity_band",
     "sweep",
     "synthetic_sweep",
+    "EvalReport",
+    "evaluate_all",
+    "precision_recall_f1",
+    "roc_auc",
+    "average_precision",
+    "mcc",
+    "spearman",
 ]

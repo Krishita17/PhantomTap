@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-60%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-68%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -19,8 +19,8 @@
   <code>access-control</code> · <code>security-audit</code> ·
   <code>wiegand</code> · <code>mifare</code> · <code>active-learning</code> ·
   <code>bayesian</code> · <code>purple-team</code> ·
-  <code>threat-detection</code> · <code>counter-surveillance</code> ·
-  <code>physical-security</code> ·
+  <code>threat-detection</code> · <code>counter-surveillance</code> · <code>skimmer-detection</code> ·
+  <code>attack-graph</code> · <code>physical-security</code> ·
   <code>pentesting</code>
 </p>
 
@@ -206,6 +206,33 @@ right beside software vulnerabilities.
 phantomtap audit --numbering sequential --sarif findings.sarif
 ```
 
+### Evaluation metrics — measured, not asserted
+
+Every classifier and detector is scored with standard metrics (precision/recall/
+F1, ROC-AUC, PR-AUC, MCC, confusion matrices, and Spearman ranking quality) over
+seeded synthetic trials. Full report: [`docs/evaluation.md`](docs/evaluation.md).
+
+| Subsystem | Key metrics |
+|-----------|-------------|
+| **Rogue-reader detection** | F1 **0.998**, ROC-AUC **1.00**, PR-AUC **1.00**, MCC **0.997** |
+| **Anomaly monitor** | mean per-attack recall **1.00**, clean-stream false-alarm rate **0.00** |
+| **Format inference** | parity-consistent recall **1.00**, top-1 **0.73**, numbering-class **0.68** |
+| **Bayesian sizing** | sequential MAPE **0.03**, randomized-resistance recall **1.00** |
+| **Risk score validity** | weak-vs-strong AUC **1.00**, Spearman ρ **1.00** |
+
+> The eval suite also *drives* fixes: it caught a 48% false-alarm rate from
+> unrealistic "teleporting" traffic in the stream generator, now **0%** after
+> modelling continuous employee movement.
+
+<p align="center">
+  <img src="docs/figures/eval_metrics.png" width="820"
+       alt="Evaluation dashboard: ROC of rogue-reader detection and format-inference confusion matrix">
+</p>
+
+```bash
+phantomtap eval          # precision/recall/F1/AUC across every subsystem
+```
+
 ## Why it's novel
 
 - The Flipper community builds **tools, not intelligence**. Existing apps
@@ -280,7 +307,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 60 tests
+make test          # 68 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -425,13 +452,14 @@ phantomtap/
   fleet.py        multi-facility campus audit (weakest-link roll-up)
   attackgraph.py  physical attack-path analysis (Dijkstra + chokepoint ranking)
   rfsweep.py      rogue-reader / skimmer detection by RF carrier fingerprint
+  evaluation.py   metrics core + per-subsystem evaluators (P/R/F1/AUC/MCC)
   sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
-scripts/          make_figures · run_benchmark · make_samples · case_study · demo
-tests/            60 pytest cases
+scripts/          make_figures · run_benchmark · make_samples · run_eval · case_study · demo
+tests/            68 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

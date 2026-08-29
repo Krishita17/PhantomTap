@@ -116,6 +116,22 @@ def _distance(a: Dict[str, float], b: Dict[str, float]) -> float:
     return math.sqrt(sum(((a[f] - b[f]) / _SCALE[f]) ** 2 for f in _FEATURES))
 
 
+def legit_distance(obs: "EmitterObservation") -> float:
+    """Normalised distance to the nearest *legitimate* profile.
+
+    A large value means the emitter looks nothing like any known-good reader --
+    a continuous "rogue score" suitable for ROC/AUC evaluation.
+    """
+    return min(_distance(obs.vec(), p.vec()) for p in PROFILES if p.legit)
+
+
+def sample_emitter(kind: str, location: str = "eval", field_strength: float = 0.6,
+                   rng: Optional[random.Random] = None) -> "EmitterObservation":
+    """Draw one noisy observation of a given emitter kind (for evaluation)."""
+    return _sample(PROFILE_BY_KIND[kind], location, field_strength,
+                   rng or random.Random())
+
+
 def proximity_band(field_strength: float) -> str:
     if field_strength >= 0.75:
         return "STRONG"
