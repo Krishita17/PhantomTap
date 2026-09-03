@@ -86,6 +86,15 @@ from .evaluation import (  # noqa: F401
     roc_auc,
     spearman,
 )
+from .timeline import (  # noqa: F401
+    LeakResult,
+    OrgModel,
+    date_leakage,
+    estimate_issue_dates,
+    growth_curve,
+    leakage_report,
+    synthesize_org,
+)
 
 __all__ = [
     "__version__",
@@ -151,4 +160,11 @@ __all__ = [
     "average_precision",
     "mcc",
     "spearman",
+    "LeakResult",
+    "OrgModel",
+    "date_leakage",
+    "estimate_issue_dates",
+    "growth_curve",
+    "leakage_report",
+    "synthesize_org",
 ]

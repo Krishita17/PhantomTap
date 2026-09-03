@@ -706,6 +706,55 @@ def fig_eval() -> None:
     _save(fig, "eval_metrics")
 
 
+def fig_timeline() -> None:
+    """Org-intel leakage: date every badge from 2 anchors + the growth curve."""
+    from phantomtap.timeline import (
+        estimate_issue_dates,
+        fit_card_to_date,
+        growth_curve,
+        synthesize_org,
+    )
+    import random as _r
+
+    org = synthesize_org(n=400, seed=1, randomized=False)
+    pairs = sorted(org.pairs())
+    # A smart auditor picks two dates spread far apart (best slope estimate).
+    anchors = [pairs[len(pairs) // 10], pairs[len(pairs) * 9 // 10]]
+    cards = [c for c, _ in pairs]
+    true_days = [d for _, d in pairs]
+    preds = estimate_issue_dates(anchors, cards)
+    mae = sum(abs(p - d) for p, d in zip(preds, true_days)) / len(pairs)
+
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(11.6, 4.6))
+
+    # Left: predicted vs true issue day, anchors highlighted
+    axl.scatter(true_days, preds, s=10, c=C_ACCENT, alpha=0.5,
+                label="predicted badge date")
+    lim = [min(true_days), max(true_days)]
+    axl.plot(lim, lim, "--", color=GRID, lw=1.2, label="perfect")
+    axl.scatter([d for _, d in anchors],
+                [fit_card_to_date(anchors).predict(c) for c, _ in anchors],
+                s=150, c=C_BF, marker="*", zorder=5, label="2 known anchors")
+    axl.set_xlabel("True issue day")
+    axl.set_ylabel("Predicted issue day")
+    axl.set_title(f"Date any badge from 2 anchors (MAE {mae:.0f} days)",
+                  fontweight="bold")
+    axl.legend(frameon=False, loc="upper left", fontsize=8.5)
+
+    # Right: cumulative headcount growth curve with hiring spikes
+    g = growth_curve(org)
+    axr.plot(g.days, g.cumulative, "-", color=C_ML, lw=2.2, label="headcount")
+    for i, sd in enumerate(g.spike_days):
+        axr.axvspan(sd, sd + 30, color=C_BF, alpha=0.18,
+                    label="hiring spike" if i == 0 else None)
+    axr.set_xlabel("Days since org start")
+    axr.set_ylabel("Cumulative headcount")
+    axr.set_title("Reconstructed hiring timeline (leaked by numbering)",
+                  fontweight="bold")
+    axr.legend(frameon=False, loc="upper left", fontsize=8.5)
+    _save(fig, "timeline_leakage")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -721,6 +770,7 @@ def main() -> None:
     fig_attack_path()
     fig_rogue_reader()
     fig_eval()
+    fig_timeline()
     print("done.")
 
 

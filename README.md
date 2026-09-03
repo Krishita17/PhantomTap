@@ -10,7 +10,7 @@
   <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-68%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-74%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -20,7 +20,8 @@
   <code>wiegand</code> · <code>mifare</code> · <code>active-learning</code> ·
   <code>bayesian</code> · <code>purple-team</code> ·
   <code>threat-detection</code> · <code>counter-surveillance</code> · <code>skimmer-detection</code> ·
-  <code>attack-graph</code> · <code>physical-security</code> ·
+  <code>attack-graph</code> · <code>osint</code> · <code>privacy</code> ·
+  <code>physical-security</code> ·
   <code>pentesting</code>
 </p>
 
@@ -206,6 +207,29 @@ right beside software vulnerabilities.
 phantomtap audit --numbering sequential --sarif findings.sarif
 ```
 
+### Organizational-intelligence leakage — your badge numbers date your hires
+
+Sequential card numbers leak more than a headcount: because badges are issued in
+**hire order**, the number is a proxy for **seniority**. Tie just **two** card
+numbers to real dates (a LinkedIn "joined March 2022", a printed issue date) and
+a linear fit **dates every other badge in the building** — reconstructing the
+org's growth curve and hiring spikes.
+
+- Sequential numbering: **2 anchors** date the whole population to **±24 days**
+  (R² 0.999) across a 6-year hiring window, and **3 hiring spikes** stay visible.
+- Randomised numbering: the fit collapses (**R² 0.001**, MAE ~740 days) — the
+  leak is gone. A concrete argument *for* randomising card numbers.
+
+<p align="center">
+  <img src="docs/figures/timeline_leakage.png" width="820"
+       alt="Date any badge from two anchors, and the reconstructed hiring timeline">
+</p>
+
+```bash
+phantomtap timeline                 # show the org-intel leak from sequential numbering
+phantomtap timeline --randomized    # the defended posture (leak destroyed)
+```
+
 ### Evaluation metrics — measured, not asserted
 
 Every classifier and detector is scored with standard metrics (precision/recall/
@@ -307,7 +331,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 68 tests
+make test          # 74 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -453,13 +477,14 @@ phantomtap/
   attackgraph.py  physical attack-path analysis (Dijkstra + chokepoint ranking)
   rfsweep.py      rogue-reader / skimmer detection by RF carrier fingerprint
   evaluation.py   metrics core + per-subsystem evaluators (P/R/F1/AUC/MCC)
+  timeline.py     org-intel leakage: date badges + hiring-curve reconstruction
   sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · make_samples · run_eval · case_study · demo
-tests/            68 pytest cases
+tests/            74 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

@@ -1,4 +1,4 @@
-.PHONY: help install dev test demo benchmark figures audit samples monitor fleet attackpath sweep eval case-study clean
+.PHONY: help install dev test demo benchmark figures audit samples monitor fleet attackpath sweep eval timeline case-study clean
 
 PY ?= python3
 
@@ -16,6 +16,7 @@ help:
 	@echo "  attackpath path-of-least-resistance to a crown-jewel zone"
 	@echo "  sweep      passive rogue-reader / skimmer detection (RF)"
 	@echo "  eval       evaluation metrics (P/R/F1/AUC) -> docs/evaluation.*"
+	@echo "  timeline   org-intel leakage from sequential badge numbering"
 	@echo "  case-study full fleet audit -> examples/case_study_campus.{md,sarif}"
 	@echo "  samples    regenerate synthetic datasets into data/synthetic/"
 	@echo "  clean      remove caches and build artifacts"
@@ -55,6 +56,9 @@ sweep:
 
 eval:
 	$(PY) -m scripts.run_eval
+
+timeline:
+	$(PY) -m phantomtap.cli timeline
 
 case-study:
 	$(PY) -m scripts.case_study

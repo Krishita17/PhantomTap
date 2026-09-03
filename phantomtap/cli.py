@@ -195,6 +195,20 @@ def cmd_sweep(args) -> int:
     return 0
 
 
+def cmd_timeline(args) -> int:
+    from .timeline import leakage_report, synthesize_org
+
+    org = synthesize_org(n=args.issued, seed=args.seed,
+                         randomized=args.randomized)
+    report = leakage_report(org)
+    if args.out:
+        Path(args.out).write_text(report)
+        print(f"wrote leakage report to {args.out}")
+    else:
+        print(report)
+    return 0
+
+
 def cmd_eval(args) -> int:
     from .evaluation import evaluate_all, render_markdown
 
@@ -265,6 +279,15 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--seed", type=int, default=0)
     sp.add_argument("--out", help="write the evaluation report to this path")
     sp.set_defaults(func=cmd_eval)
+
+    sp = sub.add_parser("timeline",
+                        help="organizational-intelligence leakage from numbering")
+    sp.add_argument("--issued", type=int, default=400)
+    sp.add_argument("--seed", type=int, default=0)
+    sp.add_argument("--randomized", action="store_true",
+                    help="model a randomised (defended) numbering scheme")
+    sp.add_argument("--out", help="write the leakage report to this path")
+    sp.set_defaults(func=cmd_timeline)
 
     sp = sub.add_parser("benchmark", help="attempts-to-characterize comparison")
     add_common(sp)
