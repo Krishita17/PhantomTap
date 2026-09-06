@@ -70,6 +70,28 @@ def cmd_audit(args) -> int:
     return 0
 
 
+def cmd_assess(args) -> int:
+    from .report import full_assessment, render_html
+
+    dep = _dep_from_args(args)
+    a = full_assessment(dep, n_observations=args.observations)
+    if args.html:
+        Path(args.html).write_text(render_html(a))
+        print(f"wrote HTML assessment to {args.html} "
+              f"(risk {a.result.risk_score}/100 {a.result.risk_band})")
+    if args.json:
+        Path(args.json).write_text(json.dumps(a.as_dict(), indent=2))
+        print(f"wrote JSON assessment to {args.json}")
+    if not args.html and not args.json:
+        # default: print a compact summary
+        print(f"== PhantomTap assessment: {dep.name} ==")
+        print(f"Risk {a.result.risk_score}/100 ({a.result.risk_band}) · "
+              f"leaks ~{a.guess.leaked_bits:.1f} bits · "
+              f"roadmap removes {a.result.risk_score - (a.plan[-1].new_risk if a.plan else a.result.risk_score)} pts")
+        print("Pass --html report.html for the full styled deliverable.")
+    return 0
+
+
 def cmd_fleet(args) -> int:
     from .fleet import audit_fleet, render_fleet_markdown
     from .population import CardFamily, NumberingScheme, generate_deployment
@@ -255,6 +277,13 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--json", help="write JSON result to this path")
     sp.add_argument("--sarif", help="write SARIF 2.1.0 findings to this path")
     sp.set_defaults(func=cmd_audit)
+
+    sp = sub.add_parser("assess",
+                        help="unified assessment -> styled HTML / JSON deliverable")
+    add_common(sp)
+    sp.add_argument("--html", help="write the self-contained HTML report here")
+    sp.add_argument("--json", help="write the JSON assessment here")
+    sp.set_defaults(func=cmd_assess)
 
     sp = sub.add_parser("fleet", help="audit a multi-facility campus (weakest-link)")
     add_common(sp)

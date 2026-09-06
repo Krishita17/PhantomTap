@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PhantomTap Assessment — H10301-26/sequential/mifare_classic/seed1</title>
+<style>
+:root{color-scheme:light}
+body{font:15px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+ color:#1a1a1a;background:#f6f7f9;margin:0;padding:0}
+.wrap{max-width:860px;margin:0 auto;padding:32px 22px 60px}
+h1{font-size:26px;margin:0 0 4px} h2{font-size:18px;margin:34px 0 10px;
+ border-bottom:2px solid #e6e8eb;padding-bottom:6px}
+.sub{color:#666;margin:0 0 18px}
+.gauge{background:#e6e8eb;border-radius:10px;height:26px;overflow:hidden;margin:6px 0}
+.gauge > span{display:block;height:100%;width:84%;background:#b2182b}
+.score{font-size:40px;font-weight:800;color:#b2182b}
+.band{display:inline-block;padding:3px 12px;border-radius:20px;color:#fff;
+ background:#b2182b;font-weight:700;font-size:13px;letter-spacing:.5px}
+table{border-collapse:collapse;width:100%;background:#fff;border-radius:8px;
+ overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);margin:8px 0}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #eef0f2;vertical-align:top}
+th{background:#fafbfc;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:#555}
+.muted{color:#666;font-size:13px} .fix{color:#1b7837;font-size:13px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.drop{color:#1b7837;font-weight:700}
+code{background:#eef0f2;padding:1px 5px;border-radius:4px;font-size:13px}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+.card{flex:1;min-width:150px;background:#fff;border-radius:8px;padding:12px 14px;
+ box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card b{font-size:22px;display:block} .card span{color:#666;font-size:12px}
+.note{background:#fff7e6;border:1px solid #ffe0a3;border-radius:8px;padding:12px 14px;
+ font-size:13px;color:#7a5b00;margin-top:30px}
+footer{color:#888;font-size:12px;margin-top:24px}
+</style></head><body><div class="wrap">
+<h1>PhantomTap Access-Control Assessment</h1>
+<p class="sub">Deployment <code>H10301-26/sequential/mifare_classic/seed1</code> &middot; H10301-26
+ &middot; facility 35 &middot; sequential
+ &middot; 500 credentials</p>
+
+<div class="score">84<span style="font-size:20px;color:#999">/100</span>
+ &nbsp;<span class="band">CRITICAL</span></div>
+<div class="gauge"><span></span></div>
+
+<div class="cards">
+ <div class="card"><b>0.0</b>
+   <span>bits of guessing (structure-aware)</span></div>
+ <div class="card"><b>15.0</b><span>bits leaked to structure</span></div>
+ <div class="card"><b>~5,265&times;</b>
+   <span>fewer queries than brute force</span></div>
+ <div class="card"><b>&minus;64</b>
+   <span>risk removable via roadmap</span></div>
+</div>
+
+<h2>Findings (6)</h2>
+<table><tr><th>Severity</th><th>Factor</th><th>Finding &amp; remediation</th></tr>
+<tr><td><span class="dot" style="background:#b2182b"></span>CRITICAL</td><td><code>guessability</code></td><td><b>Credential guessing-resistance: 0.0 bits (TRIVIAL)</b><br><span class="muted">A blind adversary faces ~15.0 bits of guessing to forge a valid credential; one that reasons about structure (locked facility code + bounded 500-wide range at 100.0% density) faces only ~0.0 bits. This deployment therefore **leaks ~15.0 bits** of credential security to a structure-aware attacker.</span><br><span class="fix">Fix: Widen the effective key space that survives inference: randomise card numbers across the full field and authenticate the credential so a guessed number alone is worthless.</span></td></tr><tr><td><span class="dot" style="background:#b2182b"></span>CRITICAL</td><td><code>numbering</code></td><td><b>Numbering scheme: sequential</b><br><span class="muted">Card numbers are issued strictly sequentially. Knowing one valid card lets an assessor predict every neighbour with near certainty.</span><br><span class="fix">Fix: Issue card numbers from a cryptographically random, non-guessable pool and decouple them from any physical/temporal issuance order.</span></td></tr><tr><td><span class="dot" style="background:#b2182b"></span>CRITICAL</td><td><code>keys</code></td><td><b>Sector key hygiene</b><br><span class="muted">11/16 sectors (69%) still carry publicly documented default keys (e.g. 00000000000A, 0123456789AB, 123456789ABC). Keys are shared across the population, so recovering one card compromises all.</span><br><span class="fix">Fix: Rotate every sector off factory/default keys, use per-card diversified keys derived from a master + UID, and store no key material in the clear.</span></td></tr><tr><td><span class="dot" style="background:#e08214"></span>HIGH</td><td><code>format</code></td><td><b>Credential format: H10301-26 (26-bit)</b><br><span class="muted">HID 26-bit, the ubiquitous legacy format. Tiny 8-bit facility code space (0-255) makes facility collisions and guessing trivial. The card-number field is 16 bits (max 65,535), and the facility-code field is 8 bits (max 255).</span><br><span class="fix">Fix: Migrate to a high-bit-count, cryptographically authenticated credential (e.g. Seos / DESFire EV2/EV3, iCLASS SE) rather than a static Wiegand format that can be read and replayed.</span></td></tr><tr><td><span class="dot" style="background:#e08214"></span>HIGH</td><td><code>characterization</code></td><td><b>Attempts-to-characterize</b><br><span class="muted">Guided search characterised 90% of the issued population in 443 reader queries versus ~2,332,513 for brute force (~5,265x fewer attempts). Low attempts-to-characterize is itself a weakness signal.</span><br><span class="fix">Fix: Randomised numbering and authenticated credentials both raise the query cost of mapping the population.</span></td></tr><tr><td><span class="dot" style="background:#d6a800"></span>MEDIUM</td><td><code>clonability</code></td><td><b>Card family: MIFARE Classic (sectored)</b><br><span class="muted">Sectored cards carry per-sector keys, so cloning depends on key strength. MIFARE Classic&#x27;s Crypto-1 cipher is itself academically broken, so weak/default keys are decisive.</span><br><span class="fix">Fix: Move off MIFARE Classic/Crypto-1 to AES-authenticated DESFire-class credentials.</span></td></tr></table>
+
+<h2>Efficiency evidence</h2>
+<p>Guided characterization mapped 90% of the population in
+ <b>443</b> reader queries vs
+ <b>2,332,513</b> for brute force (~5,265&times; fewer reader interactions than brute force).</p>
+
+<h2>Information-theoretic leakage</h2>
+<p>A blind adversary faces ~15.0 bits to forge a
+ credential; a structure-aware one faces only ~0.0
+ &mdash; the deployment <b>leaks ~15.0 bits</b>.</p>
+
+<h2>Organizational-timeline exposure</h2>
+<p>Because badges are issued in hire order, <b>two known badge dates</b> date every other badge to <b>&plusmn;34 days</b> (fit R&sup2; 1.00) &mdash; leaking headcount, tenure and hiring spikes. Randomise numbering to close this.</p>
+
+<h2>Prioritized remediation roadmap</h2>
+<table><tr><th>#</th><th>Fix</th><th>Risk after</th><th>&Delta;</th></tr>
+<tr><td>1</td><td>Randomize card numbering</td><td>58</td><td class="drop">&minus;24</td></tr><tr><td>2</td><td>Upgrade credential format</td><td>39</td><td class="drop">&minus;19</td></tr><tr><td>3</td><td>Rotate off default keys</td><td>27</td><td class="drop">&minus;12</td></tr><tr><td>4</td><td>Diversify keys per card</td><td>20</td><td class="drop">&minus;7</td></tr></table>
+<p>Applying the full roadmap projects a residual risk of <b>20/100</b>.</p>
+
+<div class="note"><b>Authorized, defensive use only.</b> This assessment was
+ produced against a synthetic or author-owned system. Testing any system you do
+ not own requires prior written authorization.</div>
+<footer>Generated by PhantomTap &middot; ML-guided RFID/NFC access-control auditing.</footer>
+</div></body></html>

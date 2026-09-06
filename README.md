@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <img alt="status" src="https://img.shields.io/badge/status-beta-blue">
+  <a href="https://github.com/Krishita17/PhantomTap/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Krishita17/PhantomTap/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-74%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-78%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -207,6 +207,23 @@ right beside software vulnerabilities.
 phantomtap audit --numbering sequential --sarif findings.sarif
 ```
 
+### One command, one deliverable — the styled HTML assessment
+
+`phantomtap assess` runs the *entire* pipeline — inference-driven audit,
+efficiency evidence, information-theoretic leakage, the org-timeline leak, and
+the prioritized remediation roadmap — and renders it as a **self-contained,
+styled HTML report** (no external assets, no JavaScript): the artifact a
+physical-security engagement actually hands over — a risk gauge, metric cards, a
+colour-coded findings table with inline fixes, and the remediation roadmap.
+Download and open the rendered example:
+[`examples/sample_assessment.html`](examples/sample_assessment.html)
+(machine-readable twin: [`sample_assessment.json`](examples/sample_assessment.json)).
+
+```bash
+phantomtap assess --numbering sequential --html report.html   # client-ready deliverable
+phantomtap assess --numbering sequential --json report.json   # machine-readable
+```
+
 ### Organizational-intelligence leakage — your badge numbers date your hires
 
 Sequential card numbers leak more than a headcount: because badges are issued in
@@ -331,7 +348,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 74 tests
+make test          # 78 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -478,13 +495,14 @@ phantomtap/
   rfsweep.py      rogue-reader / skimmer detection by RF carrier fingerprint
   evaluation.py   metrics core + per-subsystem evaluators (P/R/F1/AUC/MCC)
   timeline.py     org-intel leakage: date badges + hiring-curve reconstruction
+  report.py       unified assessment -> self-contained styled HTML/JSON deliverable
   sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · make_samples · run_eval · case_study · demo
-tests/            74 pytest cases
+tests/            78 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report

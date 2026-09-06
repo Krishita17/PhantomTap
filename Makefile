@@ -1,4 +1,4 @@
-.PHONY: help install dev test demo benchmark figures audit samples monitor fleet attackpath sweep eval timeline case-study clean
+.PHONY: help install dev test demo benchmark figures audit samples monitor fleet assess attackpath sweep eval timeline case-study clean
 
 PY ?= python3
 
@@ -11,6 +11,7 @@ help:
 	@echo "  benchmark  attempts-to-characterize sweep -> docs/benchmark_results.*"
 	@echo "  figures    regenerate all charts into docs/figures/"
 	@echo "  audit      render a sample audit report to stdout"
+	@echo "  assess     unified assessment -> examples/sample_assessment.html"
 	@echo "  monitor    blue-team detection demo on a badge-event stream"
 	@echo "  fleet      multi-facility campus audit (weakest-link roll-up)"
 	@echo "  attackpath path-of-least-resistance to a crown-jewel zone"
@@ -41,6 +42,9 @@ figures:
 
 audit:
 	$(PY) -m phantomtap.cli audit --format H10301-26 --numbering sequential
+
+assess:
+	$(PY) -m phantomtap.cli assess --format H10301-26 --numbering sequential --html examples/sample_assessment.html --json examples/sample_assessment.json
 
 monitor:
 	$(PY) -m phantomtap.cli monitor --format H10301-26 --numbering sequential

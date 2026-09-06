@@ -95,6 +95,7 @@ from .timeline import (  # noqa: F401
     leakage_report,
     synthesize_org,
 )
+from .report import Assessment, full_assessment, render_html  # noqa: F401
 
 __all__ = [
     "__version__",
@@ -167,4 +168,7 @@ __all__ = [
     "growth_curve",
     "leakage_report",
     "synthesize_org",
+    "Assessment",
+    "full_assessment",
+    "render_html",
 ]
