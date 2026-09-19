@@ -1,4 +1,4 @@
-.PHONY: help install dev test demo benchmark figures audit samples monitor fleet assess attackpath sweep eval timeline case-study clean
+.PHONY: help install dev test demo benchmark figures audit samples monitor fleet assess attackpath sweep eval timeline linkaudit case-study clean
 
 PY ?= python3
 
@@ -18,6 +18,7 @@ help:
 	@echo "  sweep      passive rogue-reader / skimmer detection (RF)"
 	@echo "  eval       evaluation metrics (P/R/F1/AUC) -> docs/evaluation.*"
 	@echo "  timeline   org-intel leakage from sequential badge numbering"
+	@echo "  linkaudit  reader->controller wire-protocol posture (Wiegand/OSDP)"
 	@echo "  case-study full fleet audit -> examples/case_study_campus.{md,sarif}"
 	@echo "  samples    regenerate synthetic datasets into data/synthetic/"
 	@echo "  clean      remove caches and build artifacts"
@@ -63,6 +64,9 @@ eval:
 
 timeline:
 	$(PY) -m phantomtap.cli timeline
+
+linkaudit:
+	$(PY) -m phantomtap.cli linkaudit --protocol wiegand
 
 case-study:
 	$(PY) -m scripts.case_study

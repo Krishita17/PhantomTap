@@ -217,6 +217,18 @@ def cmd_sweep(args) -> int:
     return 0
 
 
+def cmd_linkaudit(args) -> int:
+    from .wireprotocol import render_markdown
+
+    report = render_markdown(args.protocol)
+    if args.out:
+        Path(args.out).write_text(report)
+        print(f"wrote wire-protocol report to {args.out}")
+    else:
+        print(report)
+    return 0
+
+
 def cmd_timeline(args) -> int:
     from .timeline import leakage_report, synthesize_org
 
@@ -308,6 +320,14 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--seed", type=int, default=0)
     sp.add_argument("--out", help="write the evaluation report to this path")
     sp.set_defaults(func=cmd_eval)
+
+    sp = sub.add_parser("linkaudit",
+                        help="reader->controller wire-protocol posture (Wiegand/OSDP)")
+    sp.add_argument("--protocol", default="wiegand",
+                    choices=["wiegand", "rs485_clear", "osdp_v1", "osdp_sc"],
+                    help="wire protocol on the reader-to-controller link")
+    sp.add_argument("--out", help="write the wire-protocol report to this path")
+    sp.set_defaults(func=cmd_linkaudit)
 
     sp = sub.add_parser("timeline",
                         help="organizational-intelligence leakage from numbering")

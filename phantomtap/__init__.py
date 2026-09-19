@@ -96,6 +96,12 @@ from .timeline import (  # noqa: F401
     synthesize_org,
 )
 from .report import Assessment, full_assessment, render_html  # noqa: F401
+from .wireprotocol import (  # noqa: F401
+    LinkAssessment,
+    WireProtocol,
+    assess_link,
+    compare_protocols,
+)
 
 __all__ = [
     "__version__",
@@ -171,4 +177,8 @@ __all__ = [
     "Assessment",
     "full_assessment",
     "render_html",
+    "LinkAssessment",
+    "WireProtocol",
+    "assess_link",
+    "compare_protocols",
 ]

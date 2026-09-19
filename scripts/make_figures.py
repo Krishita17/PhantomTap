@@ -755,6 +755,48 @@ def fig_timeline() -> None:
     _save(fig, "timeline_leakage")
 
 
+def fig_wire_protocol() -> None:
+    """Reader->controller link risk: Wiegand cleartext vs OSDP Secure Channel."""
+    from phantomtap.wireprotocol import PROTOCOLS, compare_protocols
+
+    assessments = compare_protocols()
+    labels = [a.label for a in assessments]
+    risks = [a.link_risk for a in assessments]
+    props = ["encrypted", "authenticated", "supervised", "replay_resistant"]
+
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(11.8, 4.6),
+                                   gridspec_kw={"width_ratios": [1, 1.15]})
+
+    # Left: link-risk bars
+    colors = [C_BF if r >= 75 else "#f4a582" if r >= 55 else "#92c5de"
+              if r >= 35 else C_ML for r in risks]
+    y = np.arange(len(labels))
+    axl.barh(y, risks, color=colors)
+    axl.set_yticks(y, labels, fontsize=9)
+    axl.invert_yaxis()
+    axl.set_xlim(0, 100)
+    axl.set_xlabel("Link risk (higher = weaker)")
+    axl.set_title("Reader→controller wire-protocol risk", fontweight="bold")
+    for yi, r in zip(y, risks):
+        axl.annotate(str(r), (r, yi), xytext=(4, 0), textcoords="offset points",
+                     va="center", fontsize=9, fontweight="bold")
+
+    # Right: security-property matrix
+    M = np.array([[1 if getattr(PROTOCOLS[a.protocol], p) else 0 for p in props]
+                  for a in assessments], dtype=float)
+    axr.imshow(M, cmap="RdYlGn", vmin=0, vmax=1, aspect="auto")
+    axr.set_xticks(range(len(props)),
+                   [p.replace("_", "\n") for p in props], fontsize=8.5)
+    axr.set_yticks(range(len(labels)), labels, fontsize=8.5)
+    axr.set_title("Security properties by protocol", fontweight="bold")
+    for r in range(len(labels)):
+        for c in range(len(props)):
+            axr.annotate("✓" if M[r, c] else "✗", (c, r), ha="center",
+                         va="center", fontsize=13,
+                         color="#0a5" if M[r, c] else "#a00", fontweight="bold")
+    _save(fig, "wire_protocol")
+
+
 def main() -> None:
     print("Generating figures ->", FIG)
     fig_attempts_to_characterize()
@@ -771,6 +813,7 @@ def main() -> None:
     fig_rogue_reader()
     fig_eval()
     fig_timeline()
+    fig_wire_protocol()
     print("done.")
 
 

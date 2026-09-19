@@ -10,7 +10,7 @@
   <a href="https://github.com/Krishita17/PhantomTap/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Krishita17/PhantomTap/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
-  <img alt="tests" src="https://img.shields.io/badge/tests-78%20passing-brightgreen">
+  <img alt="tests" src="https://img.shields.io/badge/tests-85%20passing-brightgreen">
   <img alt="defensive" src="https://img.shields.io/badge/scope-defensive%20auditing-6f42c1">
 </p>
 
@@ -21,6 +21,7 @@
   <code>bayesian</code> · <code>purple-team</code> ·
   <code>threat-detection</code> · <code>counter-surveillance</code> · <code>skimmer-detection</code> ·
   <code>attack-graph</code> · <code>osint</code> · <code>privacy</code> ·
+  <code>osdp</code> ·
   <code>physical-security</code> ·
   <code>pentesting</code>
 </p>
@@ -247,6 +248,27 @@ phantomtap timeline                 # show the org-intel leak from sequential nu
 phantomtap timeline --randomized    # the defended posture (leak destroyed)
 ```
 
+### Wire-protocol posture — the layer *behind* the reader
+
+Every other check reasons about the credential; this one audits the
+**reader→controller link** — a distinct, often-overlooked attack surface. Legacy
+**Wiegand** sends the credential over two wires (D0/D1) in the clear, with no
+encryption, auth, or line supervision: an inline implant (the real, open-source
+**ESPKey**) logs and **replays** every badge, defeating even a strong smart card
+because the attack is *downstream* of it. **OSDP Secure Channel** (SIA / IEC
+60839-11-5, AES-128, mutually authenticated, supervised) closes it. PhantomTap
+scores each protocol and names the migration as the highest-leverage wire-layer
+fix.
+
+<p align="center">
+  <img src="docs/figures/wire_protocol.png" width="820"
+       alt="Reader-to-controller wire-protocol risk and security-property matrix">
+</p>
+
+```bash
+phantomtap linkaudit --protocol wiegand     # Wiegand=100/100; OSDP Secure Channel=0/100
+```
+
 ### Evaluation metrics — measured, not asserted
 
 Every classifier and detector is scored with standard metrics (precision/recall/
@@ -348,7 +370,7 @@ and `pytest`:
 
 ```bash
 python -m pip install -e ".[dev]"
-make test          # 78 tests
+make test          # 85 tests
 make figures       # regenerate every chart into docs/figures/
 make benchmark     # regenerate docs/benchmark_results.md
 ```
@@ -496,13 +518,14 @@ phantomtap/
   evaluation.py   metrics core + per-subsystem evaluators (P/R/F1/AUC/MCC)
   timeline.py     org-intel leakage: date badges + hiring-curve reconstruction
   report.py       unified assessment -> self-contained styled HTML/JSON deliverable
+  wireprotocol.py reader->controller link posture (Wiegand vs OSDP Secure Channel)
   sarif.py        SARIF 2.1.0 export (security-dashboard integration)
   audit.py        weighted risk scoring + Markdown report renderer
   bridge.py       Tier-2 Flipper Zero serial bridge (+ hardware-free mock)
   keys.py         publicly documented default keys (real dictionary, for detection)
   cli.py          `phantomtap` command-line entry point
 scripts/          make_figures · run_benchmark · make_samples · run_eval · case_study · demo
-tests/            78 pytest cases
+tests/            85 pytest cases
 docs/             architecture · threat_model · figures · benchmark results
 data/             synthetic samples + public reference material
 examples/         a rendered sample audit report
