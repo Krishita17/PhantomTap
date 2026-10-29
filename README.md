@@ -15,6 +15,11 @@
 </p>
 
 <p align="center">
+  <b>🎮 <a href="https://krishita17.github.io/PhantomTap/">Try the live interactive playground →</a></b><br>
+  <sub>Tweak a badge system's design in your browser and watch its risk, leakage, and remediation roadmap update live. No install.</sub>
+</p>
+
+<p align="center">
   <code>rfid</code> · <code>nfc</code> · <code>flipper-zero</code> ·
   <code>access-control</code> · <code>security-audit</code> ·
   <code>wiegand</code> · <code>mifare</code> · <code>active-learning</code> ·
